@@ -3,11 +3,12 @@ GIP lab - The Drone Project
  - Master branch is the development branch, in general, commits should go to the master branch.
  - Release branch is the branch that will be deployed on the drone/ground station - Only verified code will be merged to this branch.
  - Add directories/branches as you see fit and give them proper names ('flight_controll' and not 'your_name').
- - In your staging area, use branches when possible instead of working on the master branch.
+ - Add external documentation, explain what you are doing, why you are doing it and how you are doing it.
+ - Use branches when possible instead of working on the master branch, in particular when adding new features/fixing bugs.
  - Report bugs/todo items on the issue tracker.
 
 Repository usage (Windows)
-========
+======
  - Setup your git client (http://git-scm.com/book/en/v1/Getting-Started), to cache your password type:
 ```
 git config --global credential.helper wincred  
