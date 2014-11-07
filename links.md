@@ -12,3 +12,4 @@
  - http://diydrones.com/forum/topics/overriding-remote-control-from-a-custom-gs-with-mavlink
  - http://diydrones.com/group/arducopterusergroup/forum/topics/is-there-a-mavlink-library-or-programming-api-not-python
  - http://diydrones.com/profiles/blogs/python-mavlink-interface - Pretty useful!
+ - https://groups.google.com/forum/#!forum/mavlink - mailing list
