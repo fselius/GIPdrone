@@ -1,13 +1,11 @@
 @import url(http://fonts.googleapis.com/css?family=Quattrocento+Sans:400,400italic,700);
 
-.map {
-  height: auto;
-  width: 50%;
+#map {
+  width: 70%;
+  height: 60%;
   background: url(textured_paper.jpeg) repeat;
 }
-.ol-attribution {
-  max-width: calc(100%-3em);
-}
+
 #tags {
   display: none;
 }
