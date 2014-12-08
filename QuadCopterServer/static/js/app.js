@@ -47,7 +47,7 @@ function getOverlay(opacity) {
     var featureOverlay = new ol.FeatureOverlay({
       style: new ol.style.Style({
         fill: new ol.style.Fill({
-          color: 'rgba(255, 255, 255, opacity)'
+          color: 'rgba(255, 255, 255, 0.15)'
         }),
         stroke: new ol.style.Stroke({
           color: '#ffcc33',
@@ -103,7 +103,7 @@ var onDrawToggle = function() {
 }
 
 function onDrawAdded(event) {
-	alert("foooo");
+
 } 
 
 var typeSelect = document.getElementById('typeSelector');
