@@ -44,7 +44,7 @@
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Options <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
-            <li><a href="#" id="drawToggle" onclick="onDrawToggle()">Turn map drawing on</a></li>
+            <li><a href="#" id="drawToggle">Turn map drawing on</a></li>
             <li><a href="#">Another action</a></li>
             <!--<li><a href="#">Something else here</a></li>-->
             <li class="divider"></li>
@@ -80,7 +80,7 @@
       <div class="span12">
         <form class="form-inline">
           <label>Geometry type &nbsp;</label>
-          <select id="typeSelector">
+          <select id="typeSelector" onchange="f()">
             <option value="LineString">LineString</option>
             <option value="Polygon">Polygon</option>
           </select>
