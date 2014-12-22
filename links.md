@@ -13,3 +13,6 @@
  - http://diydrones.com/group/arducopterusergroup/forum/topics/is-there-a-mavlink-library-or-programming-api-not-python
  - http://diydrones.com/profiles/blogs/python-mavlink-interface - Pretty useful!
  - https://groups.google.com/forum/#!forum/mavlink - mailing list
+ - https://github.com/diydrones/droneapi-python Drone API
+ - https://docs.google.com/document/d/1ihKneLwA4hXmKS1W2pbG9lty_EAwbmy0giusUwQ8dto/edit# - Overview
+ - http://dev.ardupilot.com/wiki/droneapi-tutorial/ - Drone API tutorial

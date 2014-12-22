@@ -1,0 +1,5 @@
+BruGi project:
+https://sourceforge.net/projects/brushless-gimbal-brugi
+
+Gimbal Set-Up Guide
+http://www.itsqv.com/QVW/index.php?title=How_To_-_Martinez_Brushless_Gimbal_Controller_Set-Up
