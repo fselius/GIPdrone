@@ -1,6 +1,6 @@
 __author__ = 'Aviad Rom'
 from flask import Flask, url_for, request, jsonify, redirect
-from drone import Drone
+from Drone import Drone
 
 app = Flask(__name__)
 drone = Drone()

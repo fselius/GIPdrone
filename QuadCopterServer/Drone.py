@@ -1,6 +1,7 @@
 import Queue
 from datetime import datetime, date, time
 
+
 # datetime.strptime('2014-12-22 20:30:37', '%Y-%m-%d %H:%M:%S')
 class Drone:
 
