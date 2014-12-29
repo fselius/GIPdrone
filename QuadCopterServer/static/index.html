@@ -39,7 +39,7 @@
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
         <li class="active"><a href="#map">Map<span class="sr-only">(current)</span></a></li>
-        <li><a href="#flightPlan">Flight Plan</a></li>
+        <li id="flightPlan"><a href="#flightPlan">Flight Plan</a></li>
         <li><a href="#setup">Initial Setup</a></li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Options <span class="caret"></span></a>
@@ -70,9 +70,14 @@
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
   </nav>
+
   <div class="container-fluid">
     <div class="row-fluid">
       <div class="span12">
+        <div id="flight_data">
+            <div id="mouse_location">Cursor location:</div>
+            <div id="drone-data"></div>
+        </div>
         <div id="map" class="map"></div>
       </div>
     </div>
@@ -80,15 +85,12 @@
       <div class="span12">
         <form class="form-inline">
           <label>Geometry type &nbsp;</label>
-          <select id="typeSelector" onchange="f()">
+          <select id="typeSelector">
             <option value="LineString">LineString</option>
             <option value="Polygon">Polygon</option>
           </select>
         </form>
       </div>
-    </div>
-    <div class="flightPlan">
-      <h5 id="mouse-position"></h5>
     </div>
   </div>
 </body>
