@@ -10,7 +10,12 @@ $(document).ready(init)
 
 /** Functions **/
 
+function hideMouse() {
+	$("#mouse_location").toggle();
+}
+
 function init() {
+	$("#flightPlan").click(hideMouse);
 	$("#drawToggle").click(onDrawToggle);
 	$("#typeSelector").click(onGeometryTypeChange);
 	map = createMap();
@@ -32,12 +37,13 @@ function createSatLayer() {
 function craeteMousePositionControl() {
 	return new ol.control.MousePosition({
 		coordinateFormat : ol.coordinate.createStringXY(5),
+//		projection : 'EPSG:3857',
 		projection : 'EPSG:4326',
 		undefinedHTML : '&nbsp;',
 		// Define this so position is not set by default css
 		className : 'custom-mouse-position',
 	// Choose specific element to attach to
-	// target: document.getElementById('mouse-position'),
+		target: document.getElementById('mouse_location'),
 	});
 }
 
@@ -47,8 +53,8 @@ function createMap() {
 		target : 'map',
 		controls : new ol.Collection([ craeteMousePositionControl() ]),
 		view : new ol.View({
-			center : [ 3901957, 3838820 ],
-			zoom : 10
+			center : [ 3898184, 3865621 ],
+			zoom : 15
 		})
 	});
 }
