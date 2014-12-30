@@ -16,8 +16,9 @@ function hideMouse() {
 
 function init() {
 	$("#flightPlan").click(hideMouse);
-	$("#drawToggle").click(onDrawToggle);
-	$("#typeSelector").click(onGeometryTypeChange);
+	$("#drawOff").click(onDrawOff);
+	$("#drawPolygon").click(onDrawPolygon);
+	$("#drawLineString").click(onDrawLineString);
 	map = createMap();
 	drawOverlay = createOverlay();
 	drawOverlay.setMap(map);
@@ -96,28 +97,32 @@ function createModifyInteaction(overlay) {
 	});
 }
 
-function createDrawInteraction(overlay) {
+function createDrawInteraction(overlay, drawType) {
 	return new ol.interaction.Draw({
 		features : overlay.getFeatures(),
 		/** @type {ol.geom.GeometryType} */
-		type : $("#typeSelector").val()
+		type : drawType
 	});
 }
 
-function onDrawToggle(event) {
+
+function onDrawOff(event) {
 	if (drawInteraction == null) {
-		drawInteraction = createDrawInteraction(drawOverlay);
-		map.addInteraction(drawInteraction);
-		event.target.textContent = "Turn map drawing off";
 		return;
 	}
 	map.removeInteraction(drawInteraction);
 	drawInteraction = null;
-	event.target.textContent = "Turn map drawing on";
 	return;
 }
 
-function onGeometryTypeChange() {
-	$("#drawToggle").click();
-	$("#drawToggle").click();
+function onDrawPolygon(event) {
+	onDrawOff(event);
+	drawInteraction = createDrawInteraction(drawOverlay, "Polygon");
+	map.addInteraction(drawInteraction);
+}
+
+function onDrawLineString(event) {
+	onDrawOff(event);
+	drawInteraction = createDrawInteraction(drawOverlay, "LineString");
+	map.addInteraction(drawInteraction);
 }
