@@ -45,30 +45,34 @@ def get_tile(tile_type, x, y, z):
     import tileServer
     return tileServer.get_tile(tile_type, x, y, z)
 
+
 @app.route('/flightData', methods=['GET', 'POST'])
 def flight_data():
-    method = request.method
-    print(method)
-    data = ""
-    print request.data
-    print request.json
-    data = request.get_json()
-    print data["foo"]
-    # try:
-    #     data = request.get_json()
-    # except Exception, e:
-    #     print e
-    a = {'foo': 1234}
-    #print(data)
-    if method == 'POST':
-        return str(a)
-        #return 'got foo key' + str(data)
-        #return 'processing flight data post request'
-    elif method == 'GET':
-        return jsonify(**get_flight_data())
+    import randomFlightData, json
+    return json.dumps(randomFlightData.get_data())
 
-    #@app.route('foo')
-    #return render_template
+    # method = request.method
+    # print(method)
+    # data = ""
+    # print request.data
+    # print request.json
+    # data = request.get_json()
+    # print data["foo"]
+    # # try:
+    # #     data = request.get_json()
+    # # except Exception, e:
+    # #     print e
+    # a = {'foo': 1234}
+    # #print(data)
+    # if method == 'POST':
+    #     return str(a)
+    #     #return 'got foo key' + str(data)
+    #     #return 'processing flight data post request'
+    # elif method == 'GET':
+    #     return jsonify(**get_flight_data())
+    #
+    # #@app.route('foo')
+    # #return render_template
 
 
 # @app.route('/appData', methods=['GET', 'POST'])
@@ -99,16 +103,20 @@ def flight_data():
 #     'message': "",
 #     'battery': 100
 # }
+
+
 @app.route('/droneData', methods=['POST'])
-def droneRequest():
+def drone_request():
     json = request.get_json()
     drone.update(json)
     #push object to "from_drone" queue
     #return next mission (actual mission or NOP)
 
+
 def get_flight_data():
     data = mock_data.get('{0}'.format(get_random_mock_data()))
     return data
+
 
 def get_random_mock_data():
     import random

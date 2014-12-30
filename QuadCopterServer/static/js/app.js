@@ -10,12 +10,22 @@ $(document).ready(init)
 
 /** Functions **/
 
-function hideMouse() {
-	$("#mouse_location").toggle();
+function getDroneFeature() {
+	return map.getLayers().getArray()[1].getSource().getFeatures()[0];
+}
+
+function getGeometry(lat, long) {
+	return new ol.geom.Point( ol.proj.transform([lat, long], 'EPSG:4326', 'EPSG:3857'))
+}
+
+function updateDroneLocation() {
+	jQuery.getJSON("../flightData", function(data){
+		getDroneFeature().setGeometry(getGeometry(data.lat, data.long));
+	});
 }
 
 function init() {
-	$("#flightPlan").click(hideMouse);
+	$("#updateFlightData").click(updateDroneLocation);
 	$("#drawOff").click(onDrawOff);
 	$("#drawPolygon").click(onDrawPolygon);
 	$("#drawLineString").click(onDrawLineString);
@@ -23,6 +33,29 @@ function init() {
 	drawOverlay = createOverlay();
 	drawOverlay.setMap(map);
 	map.addInteraction(createModifyInteaction(drawOverlay));
+}
+
+function createDroneLayer() {
+	var iconFeature = new ol.Feature({
+	  geometry: getGeometry(35.01574, 32.77849)
+	});
+
+	var iconStyle = new ol.style.Style({
+	  image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+	    anchor: [0.9, 80],
+	    anchorXUnits: 'fraction',
+	    anchorYUnits: 'pixels',
+	    opacity: 0.75,
+	    src: 'images/drone.png'
+	  }))
+	});
+
+	iconFeature.setStyle(iconStyle);
+	return new ol.layer.Vector({
+		  source: new ol.source.Vector({
+			  features: [iconFeature]
+		  })
+	});
 }
 
 function createSatLayer() {
@@ -50,7 +83,7 @@ function craeteMousePositionControl() {
 
 function createMap() {
 	return new ol.Map({
-		layers : [ createSatLayer() ],
+		layers : [ createSatLayer(), createDroneLayer()],
 		target : 'map',
 		controls : new ol.Collection([ craeteMousePositionControl() ]),
 		view : new ol.View({
