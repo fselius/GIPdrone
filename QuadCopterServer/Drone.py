@@ -1,6 +1,7 @@
 import Queue
 from datetime import datetime, date, time
 
+
 # datetime.strptime('2014-12-22 20:30:37', '%Y-%m-%d %H:%M:%S')
 class Drone:
 
@@ -22,13 +23,12 @@ class Drone:
     def __is_stale(self, json):
         return self.__string_to_date(self.status['timestamp']) >= self.__string_to_date(json['timestamp'])
 
-
-
-d = Drone()
-import time
-time.sleep(2)
-d.update({'timestamp': '2014-12-21 20:30:00'})
-now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-d.update({'timestamp': now})
-d.update({'timestamp': now})
-d.update({'timestamp': '2014-12-23 20:30:00'})
+if __name__ == '__main__':
+    d = Drone()
+    import time
+    time.sleep(2)
+    d.update({'timestamp': '2014-12-21 20:30:00'})
+    now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    d.update({'timestamp': now})
+    d.update({'timestamp': now})
+    d.update({'timestamp': '2014-12-23 20:30:00'})
