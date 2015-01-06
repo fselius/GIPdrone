@@ -85,8 +85,8 @@ class MessageQueue(Thread):
 
 if __name__ == '__main__':
     q = MessageQueue()
-    q.enqueue(kind='heartBeat', content={'timeStamp': '2014-12-22 20:30:37', 'b': '2'})
-    q.enqueue(kind='heartBeat', content={'timeStamp': '2014-12-22 20:30:30', 'b': '1'})
-    q.enqueue(kind='targetFound', content={'timeStamp': '2014-12-22 20:30:27', 'b': '4'})
-    q.enqueue(kind='heartBeat', content={'timeStamp': '2014-12-22 20:30:40', 'b': '3'})
+    q.enqueue(kind='heartBeat', content={'timeStamp': '2015-12-22 20:30:37', 'b': '2'})
+    q.enqueue(kind='heartBeat', content={'timeStamp': '2015-12-22 20:30:30', 'b': '1'})
+    q.enqueue(kind='targetFound', content={'timeStamp': '2015-12-22 20:30:27', 'b': '4'})
+    q.enqueue(kind='heartBeat', content={'timeStamp': '2015-12-22 20:30:40', 'b': '3'})
     q.start()
