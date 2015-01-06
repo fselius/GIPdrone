@@ -38,9 +38,8 @@
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
-        <li class="active"><a href="#map">Map<span class="sr-only">(current)</span></a></li>
-        <li id="flightPlan"><a href="#flightPlan">Flight Plan</a></li>
-        <li id="updateFlightData"><a href="#setup">Update Flight Data</a></li>
+        <li><a href="#map">Map<span class="sr-only">(current)</span></a></li>
+        <li id="autoUpdateFlightData"><a href="#">Auto Update Flight Data</a></li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Map Drawing<span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
@@ -62,8 +61,37 @@
     <div class="row-fluid">
       <div class="span12">
         <div id="flight_data">
+            <h2 class="sub-header">Drone data:</h2>
+            <div class="table">
+            <table class="table">
+              <thead>
+                <tr>
+                  <td>Latitude:</td>
+                  <td id="lat"></td>
+                  <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Longitude:</td>
+                  <td id="long"></td>
+                </tr>
+                <tr>
+                  <td>Height:</td>
+                  <td id="height"></td>
+                </tr>
+                <tr>
+                  <td>Orientation:</td>
+                  <td id="orientation"></td>
+                </tr>
+                <tr>
+                  <td>Battery:</td>
+                  <td id="battery"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
             <div id="mouse_location">Cursor location:</div>
-            <div id="drone-data"></div>
         </div>
         <div id="map" class="map"></div>
       </div>

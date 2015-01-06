@@ -48,7 +48,8 @@ def get_tile(tile_type, x, y, z):
 
 @app.route('/flightData', methods=['GET', 'POST'])
 def flight_data():
-    import randomFlightData, json
+    import randomFlightData
+    import json
     return json.dumps(randomFlightData.get_data())
 
     # method = request.method
@@ -113,6 +114,12 @@ def drone_request():
     #return next mission (actual mission or NOP)
 
 
+@app.route('/receiveMessage', methods=['POST'])
+def receive_message():
+    print request
+    return "ok"
+
+
 def get_flight_data():
     data = mock_data.get('{0}'.format(get_random_mock_data()))
     return data
@@ -125,6 +132,4 @@ def get_random_mock_data():
 
 if __name__ == '__main__':
     app.run(port=8080, host='0.0.0.0', threaded=True)
-
-
 

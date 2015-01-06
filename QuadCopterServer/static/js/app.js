@@ -1,31 +1,46 @@
-/** On load execution: **/
+/** On load execution: * */
 
 var map = null;
 var drawInteraction = null;
 var drawOverlay = null;
+var autoUpdate = false;
 
-$(document).ready(init)
+$(document).ready(init);
 
-/** End of on load execution: **/
+/** End of on load execution: * */
 
-/** Functions **/
+/** Functions * */
 
 function getDroneFeature() {
 	return map.getLayers().getArray()[1].getSource().getFeatures()[0];
 }
 
-function getGeometry(lat, long) {
-	return new ol.geom.Point( ol.proj.transform([lat, long], 'EPSG:4326', 'EPSG:3857'))
+function projectLatLong(lat, long) {
+	return new ol.geom.Point(ol.proj.transform([ lat, long ], 'EPSG:4326',
+			'EPSG:3857'));
 }
 
 function updateDroneLocation() {
-	jQuery.getJSON("../flightData", function(data){
-		getDroneFeature().setGeometry(getGeometry(data.lat, data.long));
+	if (!autoUpdate) {
+		return;
+	}
+	jQuery.getJSON("../flightData", function(data) {
+		getDroneFeature().setGeometry(projectLatLong(data.lat, data.long));
+		$("#lat").html(data.lat.toFixed(5));
+		$("#long").html(data.long.toFixed(5));
+		$("#height").html(data.height.toFixed(2));
+		$("#orientation").html(data.orientation.toFixed(2));
+		$("#battery").html(data.battery.toFixed(1));
 	});
 }
 
+function toggleAutoUpdateFlightData() {
+	autoUpdate = !autoUpdate;
+	$(this).toggleClass("active", autoUpdate);
+}
+
 function init() {
-	$("#updateFlightData").click(updateDroneLocation);
+	$("#autoUpdateFlightData").click(toggleAutoUpdateFlightData);
 	$("#drawOff").click(onDrawOff);
 	$("#drawPolygon").click(onDrawPolygon);
 	$("#drawLineString").click(onDrawLineString);
@@ -33,28 +48,28 @@ function init() {
 	drawOverlay = createOverlay();
 	drawOverlay.setMap(map);
 	map.addInteraction(createModifyInteaction(drawOverlay));
+	setInterval(updateDroneLocation, 300);
 }
 
 function createDroneLayer() {
 	var iconFeature = new ol.Feature({
-	  geometry: getGeometry(35.01574, 32.77849)
+		geometry : projectLatLong(35.01574, 32.77849)
 	});
 
-	var iconStyle = new ol.style.Style({
-	  image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
-	    anchor: [0.9, 80],
-	    anchorXUnits: 'fraction',
-	    anchorYUnits: 'pixels',
-	    opacity: 0.75,
-	    src: 'images/drone.png'
-	  }))
-	});
-
-	iconFeature.setStyle(iconStyle);
+	iconFeature.setStyle(new ol.style.Style({
+		image : new ol.style.Icon(/** @type {olx.style.IconOptions} */
+				({
+					anchor : [ 0.9, 80 ],
+					anchorXUnits : 'fraction',
+					anchorYUnits : 'pixels',
+					opacity : 0.75,
+					src : 'images/drone.png'
+				}))
+			}));
 	return new ol.layer.Vector({
-		  source: new ol.source.Vector({
-			  features: [iconFeature]
-		  })
+		source : new ol.source.Vector({
+			features : [ iconFeature ]
+		})
 	});
 }
 
@@ -71,19 +86,19 @@ function createSatLayer() {
 function craeteMousePositionControl() {
 	return new ol.control.MousePosition({
 		coordinateFormat : ol.coordinate.createStringXY(5),
-//		projection : 'EPSG:3857',
+		// projection : 'EPSG:3857',
 		projection : 'EPSG:4326',
 		undefinedHTML : '&nbsp;',
 		// Define this so position is not set by default css
 		className : 'custom-mouse-position',
-	// Choose specific element to attach to
-		target: document.getElementById('mouse_location'),
+		// Choose specific element to attach to
+		target : document.getElementById('mouse_location'),
 	});
 }
 
 function createMap() {
 	return new ol.Map({
-		layers : [ createSatLayer(), createDroneLayer()],
+		layers : [ createSatLayer(), createDroneLayer() ],
 		target : 'map',
 		controls : new ol.Collection([ craeteMousePositionControl() ]),
 		view : new ol.View({
@@ -130,6 +145,16 @@ function createModifyInteaction(overlay) {
 	});
 }
 
+function createSelectInteraction(overlay) {
+	return new ol.interaction.Select({
+		features : overlay.getFeatures(),
+		removeCondition : function(event) {
+			return ol.events.condition.altKeyOnly(event)
+			&& ol.events.condition.singleClick(event);
+		}
+	});
+}
+
 function createDrawInteraction(overlay, drawType) {
 	return new ol.interaction.Draw({
 		features : overlay.getFeatures(),
@@ -137,7 +162,6 @@ function createDrawInteraction(overlay, drawType) {
 		type : drawType
 	});
 }
-
 
 function onDrawOff(event) {
 	if (drawInteraction == null) {
