@@ -4,6 +4,8 @@ var map = null;
 var drawInteraction = null;
 var drawOverlay = null;
 var autoUpdate = false;
+var followDrone = false;
+var lowBattery = 20;
 
 $(document).ready(init);
 
@@ -32,6 +34,7 @@ function updateDroneLocation() {
 		$("#orientation").html(data.orientation.toFixed(2));
 		$("#battery").html(data.battery.toFixed(1));
 	});
+	updateBatteryTextColor();
 }
 
 function toggleAutoUpdateFlightData() {
@@ -44,6 +47,9 @@ function init() {
 	$("#drawOff").click(onDrawOff);
 	$("#drawPolygon").click(onDrawPolygon);
 	$("#drawLineString").click(onDrawLineString);
+	$("#settings").click(fillSettingsModal);
+	$("#followToggle").click(onFollowToggle);
+	$("#saveSettings").click(onSaveSettings);
 	map = createMap();
 	drawOverlay = createOverlay();
 	drawOverlay.setMap(map);
@@ -182,4 +188,48 @@ function onDrawLineString(event) {
 	onDrawOff(event);
 	drawInteraction = createDrawInteraction(drawOverlay, "LineString");
 	map.addInteraction(drawInteraction);
+}
+
+function setFollowToggle() {
+    if (followDrone) {
+        $("#followToggle").attr("aria-pressed", "true");
+        $("#followToggle").attr("tooltip", "Currently centering map on drone movement");
+        $("#followToggle").text("On");
+    }
+    else {
+        $("#followToggle").attr("aria-pressed", "false");
+        $("#followToggle").attr("tooltip", "Currently not centering map on drone movement");
+        $("#followToggle").text("Off");
+    }
+}
+
+function fillSettingsModal(event) {
+    $("#criticalBattery").val(lowBattery);
+    var center = ol.proj.transform(map.getView().getCenter(), 'EPSG:3857', 'EPSG:4326');
+    $("#mapCenterLat").val(center[0]);
+    $("#mapCenterLon").val(center[1]);
+    setFollowToggle();
+}
+
+function onFollowToggle(event) {
+    followDrone = !followDrone;
+    setFollowToggle();
+}
+
+function onSaveSettings(event) {
+    var formLat = parseFloat($("#mapCenterLat").val());
+    var formLon = parseFloat($("#mapCenterLon").val());
+    lowBattery = parseFloat($("#criticalBattery").val());
+    map.getView().setCenter(ol.proj.transform([formLat, formLon], 'EPSG:4326', 'EPSG:3857'));
+    updateBatteryTextColor();
+    $("#closeSettings").click();
+}
+
+function updateBatteryTextColor() {
+    if ($("#battery").html() <= lowBattery) {
+        $("#battery").css('color', 'red');
+    }
+    else {
+        $("#battery").css('color', 'black');
+    }
 }
