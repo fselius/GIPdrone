@@ -1,10 +1,7 @@
 class BPlusTree():
-    key_list = []
-    data_list = []
-
     def __init__(self, order):
-        for data_type in range(0, DATA_TYPES_NUMBER):
-            pass
+        self.key_list = []
+        self.data_list = []
 
     def insertMeasurement(self, data_type, data, timestamp):
         self.key_list.insert(data)
@@ -41,17 +38,23 @@ class BPlusTree():
         return self.key_list[found_index], self.data_list[found_index]
 
 
-DATA_TYPES_NUMBER = 100
+DATA_TYPES_NUMBER = 900
 TREES_ORDER = 20
 
 
 class DataManagerInterface():
-    types_array_of_trees = range(0, 100)
+    types_array_of_trees = range(0, 900)
 
     def __init__(self, order = TREES_ORDER):
+        #for data_type in range(0, DATA_TYPES_NUMBER):
+        self.types_array_of_trees[27] = BPlusTree(order)
+
+    def print_tree_or_not_tree(self):
         for data_type in range(0, DATA_TYPES_NUMBER):
-            print "DIE!!"
-            self.types_array_of_trees[data_type] = BPlusTree(order)
+            for index in range(0, len(self.types_array_of_trees[data_type].data_list)):
+                print self.types_array_of_trees[data_type].key_list[index]
+                #print self.types_array_of_trees[data_type].data_list[index]
+
 
     def insertMeasurement(self, data_type, data, timestamp):
         self.types_array_of_trees[data_type].key_list.append(timestamp)
@@ -62,11 +65,12 @@ class DataManagerInterface():
         bigger = self.types_array_of_trees[data_type].search_bigger(timestamp)
         if smaller is None or bigger is None:
             return None
-        (lower_value, lower_timestamp) = smaller
-        (higher_value, higher_timestamp) = bigger
-
+        (lower_timestamp, lower_value) = smaller
+        (higher_timestamp, higher_value) = bigger
+        estimation = []
         if higher_timestamp == lower_timestamp:
             return lower_value
         else:
-            estimation = ((higher_value - lower_value) * (timestamp - lower_timestamp)) / (higher_timestamp - lower_timestamp) + lower_value
+            for index in xrange(0, len(lower_value)):
+                estimation.append(float((higher_value[index] - lower_value[index]) * (timestamp - lower_timestamp)) / (higher_timestamp - lower_timestamp) + lower_value[index])
             return estimation
