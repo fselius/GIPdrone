@@ -7,9 +7,11 @@ import json
 import urllib2
 
 priority_dictionary = {
-    'heartBeat': 3,
-    'targetFound': 2,
-    'Image': 1
+    'hello':        10,
+    'heartBeat':    3,
+    'targetFound':  2,
+    'Image':        1,
+    'bye':          -2
 }
 
 last_sent = {
@@ -27,19 +29,21 @@ class BadParams(Exception):
 
 
 class Message():
-    def __init__(self, kind, content):
-        self.kind = kind
-        if not kind in priority_dictionary:
-            raise BadParams('"' + str(kind) + '" Is not a known message type')
-        self.priority = priority_dictionary[kind]
-        if not 'timeStamp' in content:
-            raise BadParams('content has no timeStamp')
+    def __init__(self, message):
+        if not 'kind' in message:
+            raise BadParams('missing "kind" parameter')
+        self.kind = message['kind']
+        if not self.kind in priority_dictionary:
+            raise BadParams('"' + self.kind + '" Is not a known message type')
+        self.priority = priority_dictionary[self.kind]
+        if not 'timeStamp' in message:
+            raise BadParams('missing "timeStamp" parameter')
         try:
-            self.timeStamp = datetime.strptime(content['timeStamp'], '%Y-%m-%d %H:%M:%S')
+            self.timeStamp = datetime.strptime(message['timeStamp'], '%Y-%m-%d %H:%M:%S')
         except ValueError, e:
             print e
             raise BadParams('Bad timeStamp format')
-        self.content = content
+        self.content = message
 
     def __cmp__(self, other):
         if self.priority > other.priority:
@@ -56,9 +60,14 @@ class Message():
 class MessageQueue(Thread):
     __queue = PriorityQueue()
     # __target = 'http://127.0.0.1:8080/receiveMessage'
-    __target = 'http://postcatcher.in/catchers/54abdf8c31b05e0200000924'
+
+    def __init__(self, target):
+        super(MessageQueue, self).__init__()
+        self.__target = target
 
     def run(self):
+        now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        self.enqueue({'kind': 'hello', 'timeStamp': now})
         while True:
             message = self.__queue.get(block=True)
             if message.kind in last_sent and message.timeStamp < last_sent[message.kind] and message.priority != -1:
@@ -68,6 +77,8 @@ class MessageQueue(Thread):
             if not self._send_message(message):
                 print 'failed to send'
                 self.__queue.put_nowait(item=message)
+            elif message.kind == 'bye':
+                break
             elif message.kind in last_sent:
                 last_sent[message.kind] = max(message.timeStamp, last_sent[message.kind])
 
@@ -75,18 +86,25 @@ class MessageQueue(Thread):
         request = urllib2.Request(self.__target)
         request.add_header('Content-Type', 'application/json')
         try:
-            return urllib2.urlopen(url=request, data=json.dumps(message.content), timeout=10).code == 201
+            code = urllib2.urlopen(url=request, data=json.dumps(message.content), timeout=10).code
+            return 200 <= code < 300
         except urllib2.URLError, e:
             print e
             return False
 
-    def enqueue(self, content, kind):
-        self.__queue.put_nowait(item=Message(kind=kind, content=content))
+    def enqueue(self, message):
+        self.__queue.put_nowait(item=Message(message))
+
+    def stop(self):
+        now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        self.enqueue({'kind': 'bye', 'timeStamp': now})
 
 if __name__ == '__main__':
-    q = MessageQueue()
-    q.enqueue(kind='heartBeat', content={'timeStamp': '2015-12-22 20:30:37', 'b': '2'})
-    q.enqueue(kind='heartBeat', content={'timeStamp': '2015-12-22 20:30:30', 'b': '1'})
-    q.enqueue(kind='targetFound', content={'timeStamp': '2015-12-22 20:30:27', 'b': '4'})
-    q.enqueue(kind='heartBeat', content={'timeStamp': '2015-12-22 20:30:40', 'b': '3'})
+    # q = MessageQueue(target='http://postcatcher.in/catchers/54abdf8c31b05e0200000924')
+    q = MessageQueue(target='http://127.0.0.1:8080/receiveMessage')
+    q.enqueue({'kind': 'heartBeat', 'timeStamp': '2015-12-22 20:30:37', 'b': '2'})
+    q.enqueue({'kind': 'heartBeat', 'timeStamp': '2015-12-22 20:30:30', 'b': '1'})
+    q.enqueue({'kind': 'targetFound', 'timeStamp': '2015-12-22 20:30:27', 'b': '4'})
+    q.enqueue({'kind': 'heartBeat', 'timeStamp': '2015-12-22 20:30:40', 'b': '3'})
     q.start()
+    q.stop()
