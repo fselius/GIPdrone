@@ -11,6 +11,9 @@ droneIp = None
 
 
 def switch_queue(ip):
+    #add more ip validation
+    if not ip or ip == droneIp:
+        return
     global messagesQueue
     global droneIp
     if messagesQueue:
@@ -21,8 +24,7 @@ def switch_queue(ip):
 
 
 def handle_hello(message, ip):
-    if ip != droneIp:
-        switch_queue(ip)
+    switch_queue(ip)
     print 'Got hello from: ' + ip
 
 
@@ -48,10 +50,8 @@ def get_tile(tile_type, x, y, z):
 
 @app.route('/changeDrone', methods=['GET'])
 def change_drone():
-    ip = request.args.get('ip', False)
-    # add ip validation
-    if ip:
-        switch_queue(ip)
+    switch_queue(request.args.get('ip', False))
+    return 'ok'
 
 
 @app.route('/receiveMessage', methods=['POST'])
