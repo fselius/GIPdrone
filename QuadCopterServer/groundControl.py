@@ -29,7 +29,12 @@ def handle_hello(message, ip):
 
 
 def handle_bye(message, ip):
-    #messagesQueue.stop()
+    global messagesQueue
+    global droneIp
+    if ip == droneIp:
+        messagesQueue.stop()
+        messagesQueue = None
+        droneIp = None
     print 'Got bye from: ' + ip
 
 messagesHandlers = {
@@ -51,6 +56,11 @@ def get_tile(tile_type, x, y, z):
 @app.route('/changeDrone', methods=['GET'])
 def change_drone():
     switch_queue(request.args.get('ip', False))
+    global messagesQueue
+    global droneIp
+    messagesQueue.stop()
+    messagesQueue = None
+    droneIp = None
     return 'ok'
 
 
