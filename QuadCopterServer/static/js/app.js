@@ -5,6 +5,7 @@ var drawInteraction = null;
 var drawOverlay = null;
 var autoUpdate = false;
 var followDrone = false;
+var followIterator = 0;
 var lowBattery = 20;
 
 $(document).ready(init);
@@ -34,6 +35,15 @@ function updateDroneLocation() {
 		$("#orientation").html(data.orientation.toFixed(2));
 		$("#battery").html(data.battery.toFixed(1));
 	});
+	if (followDrone) {
+	    followIterator++;
+	    followIterator = followIterator%5;
+	    if (followIterator == 0) {
+            var lat = parseFloat($("#lat").html());
+            var lon = parseFloat($("#long").html());
+            map.getView().setCenter(ol.proj.transform([lat, lon], 'EPSG:4326', 'EPSG:3857'));
+	    }
+	}
 	updateBatteryTextColor();
 }
 
