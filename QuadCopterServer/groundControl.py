@@ -11,11 +11,11 @@ droneIp = None
 
 
 def switch_queue(ip):
+    global messagesQueue
+    global droneIp
     #add more ip validation
     if not ip or ip == droneIp:
         return
-    global messagesQueue
-    global droneIp
     if messagesQueue:
         messagesQueue.stop()
     droneIp = ip
