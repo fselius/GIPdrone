@@ -44,7 +44,8 @@ function updateDroneLocation() {
             map.getView().setCenter(ol.proj.transform([lat, lon], 'EPSG:4326', 'EPSG:3857'));
 	    }
 	}
-	updateBatteryTextColor();
+	$("#battery").toggleClass("criticalLevel", $("#battery").html() <= lowBattery);
+	//updateBatteryTextColor();
 }
 
 function toggleAutoUpdateFlightData() {
@@ -231,7 +232,8 @@ function onSaveSettings(event) {
     var formLon = parseFloat($("#mapCenterLon").val());
     lowBattery = parseFloat($("#criticalBattery").val());
     map.getView().setCenter(ol.proj.transform([formLat, formLon], 'EPSG:4326', 'EPSG:3857'));
-    updateBatteryTextColor();
+    //$("#battery").toggleClass("criticalLevel", $("#battery").html() <= lowBattery);
+    //updateBatteryTextColor();
     $("#closeSettings").click();
 }
 
