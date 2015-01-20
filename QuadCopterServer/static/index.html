@@ -82,7 +82,7 @@
               </div>
               <div class="form-group">
                 <label for="followToggle">Center map on drone</label>
-                <button class="btn btn-primary" data-toggle="button" aria-pressed="false" id="followToggle"></button>
+                <button class="btn" data-toggle="button" aria-pressed="false" id="followToggle"></button>
               </div>
             </form>
           </div>
@@ -127,6 +127,11 @@
             </table>
           </div>
             <div id="mouse_location">Cursor location:</div>
+        </div>
+        <div id="registerDrone">
+        	<label>Enter drone ip:</label>
+        	<input type="text" class="form-control" id="droneIp" value="127.0.0.1"><br>
+        	<button class="btn" id="sendDroneIp">Send</button>
         </div>
         <div id="map" class="map"></div>
       </div>

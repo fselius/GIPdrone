@@ -5,7 +5,8 @@ var drawInteraction = null;
 var drawOverlay = null;
 var autoUpdate = false;
 var followDrone = false;
-var lowBattery = 20;
+var followIterator = 0;
+var criticalBatteryLevel = 20;
 
 $(document).ready(init);
 
@@ -32,9 +33,19 @@ function updateDroneLocation() {
 		$("#long").html(data.long.toFixed(5));
 		$("#height").html(data.height.toFixed(2));
 		$("#orientation").html(data.orientation.toFixed(2));
-		$("#battery").html(data.battery.toFixed(1));
+		batteryLevel = data.battery.toFixed(1);
+		$("#battery").html(batteryLevel);
+		$("#battery").toggleClass("criticalLevel", batteryLevel <= criticalBatteryLevel);
 	});
-	updateBatteryTextColor();
+	if (followDrone) {
+	    followIterator++;
+	    followIterator = followIterator%5;
+	    if (followIterator == 0) {
+            var lat = parseFloat($("#lat").html());
+            var lon = parseFloat($("#long").html());
+            map.getView().setCenter(ol.proj.transform([lat, lon], 'EPSG:4326', 'EPSG:3857'));
+	    }
+	}
 }
 
 function toggleAutoUpdateFlightData() {
@@ -50,11 +61,14 @@ function init() {
 	$("#settings").click(fillSettingsModal);
 	$("#followToggle").click(onFollowToggle);
 	$("#saveSettings").click(onSaveSettings);
+	$("#sendDroneIp").click(sendDroneIp);
+	$(window).resize(fixMapSize);
 	map = createMap();
 	drawOverlay = createOverlay();
 	drawOverlay.setMap(map);
 	map.addInteraction(createModifyInteaction(drawOverlay));
 	setInterval(updateDroneLocation, 300);
+	fixMapSize();
 }
 
 function createDroneLayer() {
@@ -204,7 +218,7 @@ function setFollowToggle() {
 }
 
 function fillSettingsModal(event) {
-    $("#criticalBattery").val(lowBattery);
+    $("#criticalBattery").val(criticalBatteryLevel);
     var center = ol.proj.transform(map.getView().getCenter(), 'EPSG:3857', 'EPSG:4326');
     $("#mapCenterLat").val(center[0]);
     $("#mapCenterLon").val(center[1]);
@@ -219,17 +233,25 @@ function onFollowToggle(event) {
 function onSaveSettings(event) {
     var formLat = parseFloat($("#mapCenterLat").val());
     var formLon = parseFloat($("#mapCenterLon").val());
-    lowBattery = parseFloat($("#criticalBattery").val());
+    criticalBatteryLevel = parseFloat($("#criticalBattery").val());
     map.getView().setCenter(ol.proj.transform([formLat, formLon], 'EPSG:4326', 'EPSG:3857'));
-    updateBatteryTextColor();
     $("#closeSettings").click();
 }
 
-function updateBatteryTextColor() {
-    if ($("#battery").html() <= lowBattery) {
-        $("#battery").css('color', 'red');
-    }
-    else {
-        $("#battery").css('color', 'black');
-    }
+function fixMapSize() {
+	//required so that size fix occurs after resize event is finished
+	setTimeout(function() {
+		h = $(window).height() - 90;
+		w = $(window).width() - 270; 
+		map.setSize([w, h]);
+	}, 300);
+}
+
+function sendDroneIp() {
+	$.get("../changeDrone?ip=" + $("#droneIp").val(), function(data) {
+		if(data == "ok") {
+			$("#flight_data").css("display","block");
+			$("#registerDrone").css("display", "none");
+		}
+	});
 }
