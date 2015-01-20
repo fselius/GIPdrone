@@ -1,7 +1,10 @@
+from email import message_from_file
+
 __author__ = 'Aviad Rom'
-from flask import Flask, url_for, request, jsonify, redirect
+from flask import Flask, url_for, request, redirect
 from Drone import Drone
-from messageQueue import MessageQueue
+from messageQueue import MessageQueue, Message
+from datetime import datetime
 import json
 
 app = Flask(__name__)
@@ -10,37 +13,51 @@ messagesQueue = None
 droneIp = None
 
 
-def switch_queue(ip):
+def is_new_valid_ip(ip):
+    #add more ip validation
+    return ip and ip != droneIp
+
+
+def destroy_queue(ip):
+    global droneIp
+    global messagesQueue
+    if ip != droneIp or not messagesQueue:
+        return
+    messagesQueue.stop()
+    messagesQueue = None
+    droneIp = None
+
+
+def create_queue(ip):
     global messagesQueue
     global droneIp
-    #add more ip validation
-    if not ip or ip == droneIp:
-        return
-    if messagesQueue:
-        messagesQueue.stop()
     droneIp = ip
     messagesQueue = MessageQueue(target=('http://' + ip + ':8080/receiveMessage'))
     messagesQueue.start()
 
 
-def handle_hello(message, ip):
-    switch_queue(ip)
-    print 'Got hello from: ' + ip
+def handle_hello(ip, message=None):
+    if not is_new_valid_ip(ip):
+        return
+    destroy_queue(droneIp)
+    create_queue(ip)
 
 
-def handle_bye(message, ip):
-    global messagesQueue
-    global droneIp
-    if ip == droneIp:
-        messagesQueue.stop()
-        messagesQueue = None
-        droneIp = None
-    print 'Got bye from: ' + ip
+def handle_bye(ip, message=None):
+    destroy_queue(ip)
+
+
+def log_message(message, ip):
+    sent = message.timeStamp.strftime('%Y-%m-%d %H:%M:%S')
+    now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    print 'Got: "' + message.kind + '" from: ' + ip
+    print 'Message Sent: ' + sent + ', received: ' + now
 
 messagesHandlers = {
     'hello': handle_hello,
     'bye':      handle_bye
 }
+
 
 @app.route("/")
 def get_site():
@@ -55,21 +72,18 @@ def get_tile(tile_type, x, y, z):
 
 @app.route('/changeDrone', methods=['GET'])
 def change_drone():
-    switch_queue(request.args.get('ip', False))
-    global messagesQueue
-    global droneIp
-    messagesQueue.stop()
-    messagesQueue = None
-    droneIp = None
+    handle_hello(ip=request.args.get('ip', False))
     return 'ok'
 
 
 @app.route('/receiveMessage', methods=['POST'])
 def receive_message():
-    message = json.loads(request.data)
-    if message['kind'] in messagesHandlers:
-        messagesHandlers[message['kind']](message, request.remote_addr)
-    return "ok"
+    message = Message(json.loads(request.data))
+    log_message(message, request.remote_addr)
+    if message.kind in messagesHandlers:
+        messagesHandlers[message.kind](ip=request.remote_addr, message=message)
+        return "ok"
+    return "No handler found for message kind: " + message.kind
 
 
 @app.route('/flightData', methods=['GET'])
