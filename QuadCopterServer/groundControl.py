@@ -5,6 +5,7 @@ from flask import Flask, url_for, request, redirect
 from Drone import Drone
 from messageQueue import MessageQueue, Message
 from datetime import datetime
+from threading import Thread
 import json
 
 app = Flask(__name__)
@@ -101,100 +102,7 @@ def drone_request():
 
 
 if __name__ == '__main__':
-    app.debug = True
-    app.run(port=8080, host='0.0.0.0', threaded=True)
-
-##############################################################
-
-#app.debug = True
-
-# mock_data = {'1': {'waypoint': 1, 'lat': 30.12345, 'lon': 32.234234, 'height': 30.3, 'orientation': 95},
-#              '2': {'waypoint': 2, 'lat': 30.12345, 'lon': 32.234234, 'height': 30.4, 'orientation': 100},
-#              '3': {'waypoint': 3, 'lat': 30.12345, 'lon': 32.234234, 'height': 30.5, 'orientation': 120}}
-
-
-#
-#FROM CLIENT {
-#     'lat': 30.12345,
-#     'lon': 32.234234,
-#     'height': 30.3,
-#     'orientation': 90,
-#     'message': "",
-#     'battery': 100
-# }
-
-
-#
-#TO CLIENT {
-#     'lat': 30.12345,
-#     'lon': 32.234234,
-#     'height': 30.3,
-#     'orientation': 90,
-#     'message': "",
-#     'battery': 100
-# }
-
-
-#mock_iterator = int(1)
-
-    # method = request.method
-    # print(method)
-    # data = ""
-    # print request.data
-    # print request.json
-    # data = request.get_json()
-    # print data["foo"]
-    # # try:
-    # #     data = request.get_json()
-    # # except Exception, e:
-    # #     print e
-    # a = {'foo': 1234}
-    # #print(data)
-    # if method == 'POST':
-    #     return str(a)
-    #     #return 'got foo key' + str(data)
-    #     #return 'processing flight data post request'
-    # elif method == 'GET':
-    #     return jsonify(**get_flight_data())
-    #
-    # #@app.route('foo')
-    # #return render_template
-
-
-# @app.route('/appData', methods=['GET', 'POST'])
-# def client():
-#
-#
-
-
-
-#
-#FROM DRONE {
-#     'lat': 30.12345,
-#     'lon': 32.234234,
-#     'elevation': 30.3,
-#     'bearing': 90,
-#     'battery': 100
-#     'message': "",
-#     'timestamp': now
-# }
-
-
-#
-#TO DRONE {
-#     'lat': 30.12345,
-#     'lon': 32.234234,
-#     'elevation': 30.3,
-#     'orientation': 90,
-#     'message': "",
-#     'battery': 100
-# }
-
-# def get_flight_data():
-#     data = mock_data.get('{0}'.format(get_random_mock_data()))
-#     return data
-
-# def get_random_mock_data():
-#     import random
-#     a = [1, 2, 3]
-#     return random.choice(a)
+    app.run(port=8080, host='0.0.0.0',debug=True, threaded=True)
+else:
+    mainThread = Thread(target=app.run, kwargs={'port': 8080, 'host': '0.0.0.0', 'debug': False, 'threaded': True})
+    mainThread.start()

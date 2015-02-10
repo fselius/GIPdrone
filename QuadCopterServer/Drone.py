@@ -32,3 +32,7 @@ if __name__ == '__main__':
     d.update({'timestamp': now})
     d.update({'timestamp': now})
     d.update({'timestamp': '2014-12-23 20:30:00'})
+    import groundControl
+    # groundControl.handle_hello('192.168.17.118')
+    if groundControl.messagesQueue:
+        print "aa"
