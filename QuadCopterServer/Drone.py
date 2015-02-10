@@ -24,15 +24,13 @@ class Drone:
         return self.__string_to_date(self.status['timestamp']) >= self.__string_to_date(json['timestamp'])
 
 if __name__ == '__main__':
-    d = Drone()
-    import time
-    time.sleep(2)
-    d.update({'timestamp': '2014-12-21 20:30:00'})
-    now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-    d.update({'timestamp': now})
-    d.update({'timestamp': now})
-    d.update({'timestamp': '2014-12-23 20:30:00'})
+    # d = Drone()
+    # import time
+    # time.sleep(2)
+    # d.update({'timestamp': '2014-12-21 20:30:00'})
+    # now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    # d.update({'timestamp': now})
+    # d.update({'timestamp': now})
+    # d.update({'timestamp': '2014-12-23 20:30:00'})
     import groundControl
-    # groundControl.handle_hello('192.168.17.118')
-    if groundControl.messagesQueue:
-        print "aa"
+    groundControl.start_server()

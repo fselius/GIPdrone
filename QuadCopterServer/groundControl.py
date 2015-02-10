@@ -100,9 +100,36 @@ def drone_request():
     #push object to "from_drone" queue
     #return next mission (actual mission or NOP)
 
+serverThread = None
+
+
+def start_server():
+    global serverThread
+    if not serverThread:
+        serverThread = Thread(target=app.run,
+                              kwargs={'port': 8080, 'host': '0.0.0.0', 'debug': False, 'threaded': True})
+        serverThread.start()
+        return "ok"
+    else:
+        return "Server already running"
+
+
+def connect(ip=None):
+    if serverThread:
+        handle_hello(ip)
+        return "Hello sent"
+    else:
+        return "Server not running"
+
+
+def send_message(message_json):
+    if not serverThread:
+        return "Server not running"
+    if not messagesQueue:
+        return "Not connected"
+    messagesQueue.enqueue(message_json)
+    return "Message queued"
+
 
 if __name__ == '__main__':
     app.run(port=8080, host='0.0.0.0',debug=True, threaded=True)
-else:
-    mainThread = Thread(target=app.run, kwargs={'port': 8080, 'host': '0.0.0.0', 'debug': False, 'threaded': True})
-    mainThread.start()
