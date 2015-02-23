@@ -197,10 +197,10 @@ function createDrawInteraction(overlay, drawType) {
 }
 
 function addDrawCoordinates(event) {
-    var coor = ol.proj.transform(map.getEventCoordinate(event), 'EPSG:3857','EPSG:4326' );
-    console.log(coor);
-    var lat = coor[0];
-    var lon = coor[1];
+    var mousePositionString = $("#mouse_location").find("div.custom-mouse-position").text();
+    var positionSplit = mousePositionString.split(", ");
+    var lat = positionSplit[0];
+    var lon = positionSplit[1];
     if (coordinatesExist(lat, lon)) {
     	return;
     }
