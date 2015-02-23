@@ -9,7 +9,11 @@ from logging import Logger
 import json
 
 app = Flask(__name__)
-droneData = {'lastUpdate': datetime.utcnow(), 'stats': None}
+droneData = dict(lastUpdate=datetime.utcnow(), stats={'lat': 35.01574,
+                                                      'long': 32.77849,
+                                                      'height': 90,
+                                                      'orientation': 0,
+                                                      'battery': 95})
 messagesQueue = None
 droneIp = None
 
@@ -103,6 +107,18 @@ def receive_message():
 @app.route('/flightData', methods=['GET'])
 def flight_data():
     return json.dumps(droneData['stats'])
+
+
+@app.route('/track', methods=['POST'])
+def track():
+    print request.form["drawType"]
+    print request.form["drawCoordinates"]
+
+    # req = json.loads(request.data)
+    print "Got track request"
+    # print "type: " + req['drawType']
+    # print "points: " + req['drawCoordinates']
+    return "ok"
 
 
 serverThread = None

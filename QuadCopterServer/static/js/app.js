@@ -197,27 +197,28 @@ function createDrawInteraction(overlay, drawType) {
 }
 
 function addDrawCoordinates(event) {
-    var coor = map.getEventCoordinate(event);
+    var coor = ol.proj.transform(map.getEventCoordinate(event), 'EPSG:3857','EPSG:4326' );
+    console.log(coor);
     var lat = coor[0];
     var lon = coor[1];
-    var coordinates = {"lat": lat, "lon": lon};
-    if (coordinatesExist(lat, lon) == false) {
-        //make sure we add a real point and not accidentally from a double click
-        currentDrawLat.push(lat);
-        currentDrawLon.push(lon);
+    if (coordinatesExist(lat, lon)) {
+    	return;
     }
+    currentDrawLat.push(lat);
+    currentDrawLon.push(lon);
 }
 
 function finishDrawing() {
     alert ("Finished drawing track. Sending to drone");
     //ask the user if he wants to send this drawing as a path or it's just junk
     var points = [];
-    for (i = 0; i < currentDrawLat.length; i++) {
+    for (var i = 0; i < currentDrawLat.length; i++) {
         var point = {"lat":currentDrawLat[i], "lon":currentDrawLon[i]};
         points.push(point);
     }
 
-    var trackData = { "drawType": currentDrawType, "drawCoordinates":points};
+    $.post('../track', {"drawType": currentDrawType, "drawCoordinates":JSON.stringify(points)});
+    
     //post request that track to the server
     currentDrawLat = [];
     currentDrawLon = [];
@@ -228,8 +229,8 @@ function onDrawOff(event) {
 	if (drawInteraction == null) {
 		return;
 	}
-	$(map).click(addDrawCoordinates()).off();
-    $(map).dblclick(finishDrawing).off();
+	$(map).unbind("dblclick", finishDrawing);
+	$(map).unbind("click", addDrawCoordinates);
 	map.removeInteraction(drawInteraction);
 	drawInteraction = null;
     currentDrawType = "";
