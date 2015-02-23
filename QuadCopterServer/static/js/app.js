@@ -199,8 +199,8 @@ function createDrawInteraction(overlay, drawType) {
 function addDrawCoordinates(event) {
     var mousePositionString = $("#mouse_location").find("div.custom-mouse-position").text();
     var positionSplit = mousePositionString.split(", ");
-    var lat = positionSplit[0];
-    var lon = positionSplit[1];
+    var lat = parseFloat(positionSplit[0]);
+    var lon = parseFloat(positionSplit[1]);
     if (coordinatesExist(lat, lon)) {
     	return;
     }
