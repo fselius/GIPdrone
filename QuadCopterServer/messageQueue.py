@@ -105,8 +105,5 @@ if __name__ == '__main__':
     q.enqueue({'kind': 'heartBeat', 'timeStamp': '2015-12-22 20:30:37', 'stats': {'lat': 35.01574, 'long': 32.77849,
                                                                                   'height': 90, 'orientation': 0,
                                                                                   'battery': 95}})
-    q.enqueue({'kind': 'heartBeat', 'timeStamp': '2015-12-22 20:30:30', 'b': '1'})
-    q.enqueue({'kind': 'targetFound', 'timeStamp': '2015-12-22 20:30:27', 'b': '4'})
-    q.enqueue({'kind': 'heartBeat', 'timeStamp': '2015-12-22 20:30:40', 'b': '3'})
     q.start()
     q.stop()
