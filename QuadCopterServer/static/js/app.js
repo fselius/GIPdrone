@@ -5,8 +5,15 @@ var drawInteraction = null;
 var drawOverlay = null;
 var autoUpdate = false;
 var followDrone = false;
+var registeredDrone = false;
 var followIterator = 0;
 var criticalBatteryLevel = 20;
+
+/* Global placeholder for polygon/linestring coordinates */
+var currentDrawLat = [];
+var currentDrawLon = [];
+var currentDrawType = "";
+
 
 $(document).ready(init);
 
@@ -175,6 +182,12 @@ function createSelectInteraction(overlay) {
 	});
 }
 
+//Double click validator
+function coordinatesExist(lat, lon) {
+    var sameLat = currentDrawLat[currentDrawLat.length - 1] == lat;
+    var sameLon = currentDrawLon[currentDrawLon.length - 1] == lon;
+    return sameLat && sameLon;
+}
 function createDrawInteraction(overlay, drawType) {
 	return new ol.interaction.Draw({
 		features : overlay.getFeatures(),
@@ -183,25 +196,62 @@ function createDrawInteraction(overlay, drawType) {
 	});
 }
 
+function addDrawCoordinates(event) {
+    var coor = map.getEventCoordinate(event);
+    var lat = coor[0];
+    var lon = coor[1];
+    var coordinates = {"lat": lat, "lon": lon};
+    if (coordinatesExist(lat, lon) == false) {
+        //make sure we add a real point and not accidentally from a double click
+        currentDrawLat.push(lat);
+        currentDrawLon.push(lon);
+    }
+}
+
+function finishDrawing() {
+    alert ("Finished drawing track. Sending to drone");
+    //ask the user if he wants to send this drawing as a path or it's just junk
+    var points = [];
+    for (i = 0; i < currentDrawLat.length; i++) {
+        var point = {"lat":currentDrawLat[i], "lon":currentDrawLon[i]};
+        points.push(point);
+    }
+
+    var trackData = { "drawType": currentDrawType, "drawCoordinates":points};
+    //post request that track to the server
+    currentDrawLat = [];
+    currentDrawLon = [];
+
+}
+
 function onDrawOff(event) {
 	if (drawInteraction == null) {
 		return;
 	}
+	$(map).click(addDrawCoordinates()).off();
+    $(map).dblclick(finishDrawing).off();
 	map.removeInteraction(drawInteraction);
 	drawInteraction = null;
+    currentDrawType = "";
 	return;
 }
 
 function onDrawPolygon(event) {
 	onDrawOff(event);
+    currentDrawType = "Polygon";
 	drawInteraction = createDrawInteraction(drawOverlay, "Polygon");
 	map.addInteraction(drawInteraction);
+	$(map).click(addDrawCoordinates);
+    $(map).dblclick(finishDrawing);
 }
 
 function onDrawLineString(event) {
 	onDrawOff(event);
+    currentDrawType = "LineString";
 	drawInteraction = createDrawInteraction(drawOverlay, "LineString");
 	map.addInteraction(drawInteraction);
+    $(map).click(addDrawCoordinates);
+    $(map).dblclick(finishDrawing);
 }
 
 function setFollowToggle() {
@@ -252,6 +302,7 @@ function sendDroneIp() {
 		if(data == "ok") {
 			$("#flight_data").css("display","block");
 			$("#registerDrone").css("display", "none");
+            registeredDrone = true;
 		}
 	});
 }

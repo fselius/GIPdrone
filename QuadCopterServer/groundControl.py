@@ -47,6 +47,8 @@ def handle_hello(ip, message=None):
 def handle_bye(ip, message=None):
     destroy_queue(ip)
 
+def handle_heartbeat (message=None):
+    print 'foo'
 
 def log_message(message, ip):
     sent = message.timeStamp.strftime('%Y-%m-%d %H:%M:%S')
@@ -56,7 +58,8 @@ def log_message(message, ip):
 
 messagesHandlers = {
     'hello': handle_hello,
-    'bye':      handle_bye
+    'bye':      handle_bye,
+    'heartBeat': handle_heartbeat
 }
 
 
@@ -91,6 +94,7 @@ def receive_message():
 def flight_data():
     import randomFlightData
     return json.dumps(randomFlightData.get_data())
+    # should return the heartbeat instead
 
 
 @app.route('/droneData', methods=['POST'])
