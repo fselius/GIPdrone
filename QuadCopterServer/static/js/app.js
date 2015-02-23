@@ -5,11 +5,10 @@ var drawInteraction = null;
 var drawOverlay = null;
 var autoUpdate = false;
 var followDrone = false;
-var registeredDrone = false;
 var followIterator = 0;
 var criticalBatteryLevel = 20;
 
-/* Global placeholder for polygon/linestring coordinates */
+/** Global placeholder for polygon/linestring coordinates **/
 var currentDrawLat = [];
 var currentDrawLon = [];
 var currentDrawType = "";
@@ -21,6 +20,131 @@ $(document).ready(init);
 
 /** Functions * */
 
+/**
+ * INITIALIZE (performed on application page load)
+ */
+function init() {
+    $("#autoUpdateFlightData").click(toggleAutoUpdateFlightData);
+    $("#settings").click(fillSettingsModal);
+    $("#followToggle").click(onFollowToggle);
+    $("#saveSettings").click(onSaveSettings);
+    $("#sendDroneIp").click(sendDroneIp);
+    $("#dontSendTrack").click(clearTrackData);
+    $("#sendTrack").click(sendTrackData);
+    $(window).resize(fixMapSize);
+    map = createMap();
+    drawOverlay = createOverlay();
+    drawOverlay.setMap(map);
+    map.addInteraction(createModifyInteaction(drawOverlay));
+    setInterval(updateDroneLocation, 300);
+    fixMapSize();
+}
+
+/** Map creation and definition functions  **/
+/**
+ * Create the map object
+ * @returns {ol.Map}
+ */
+function createMap() {
+    return new ol.Map({
+        layers : [ createSatLayer(), createDroneLayer() ],
+        target : 'map',
+        controls : new ol.Collection([ createMousePositionControl() ]),
+        view : new ol.View({
+            center : [ 3898184, 3865621 ],
+            zoom : 15
+        })
+    });
+}
+
+/**
+ * Create the mouse position control for the map to allow
+ * displaying cursor coordinates on the app screen
+ * @returns {OpenLayers.Control.MousePosition}
+ */
+function createMousePositionControl() {
+    return new ol.control.MousePosition({
+        coordinateFormat : ol.coordinate.createStringXY(5),
+        // projection : 'EPSG:3857',
+        projection : 'EPSG:4326',
+        undefinedHTML : '&nbsp;',
+        // Define this so position is not set by default css
+        className : 'custom-mouse-position',
+        // Choose specific element to attach to
+        target : document.getElementById('mouse_location'),
+    });
+}
+
+/**
+ * Create the map layer that holds the drone icon
+ * @returns {OpenLayers.Feature.Vector}
+ */
+function createDroneLayer() {
+    var iconFeature = new ol.Feature({
+        geometry : projectLatLong(35.01574, 32.77849)
+    });
+
+    iconFeature.setStyle(new ol.style.Style({
+        image : new ol.style.Icon(/** @type {olx.style.IconOptions} */
+            ({
+                anchor : [ 0.9, 80 ],
+                anchorXUnits : 'fraction',
+                anchorYUnits : 'pixels',
+                opacity : 0.75,
+                src : 'images/drone.png'
+            }))
+    }));
+    return new ol.layer.Vector({
+        source : new ol.source.Vector({
+            features : [ iconFeature ]
+        })
+    });
+}
+
+/**
+ * Create the map layer that holds satellite map tiles
+ * (note: this is made by our choice, you can put whatever
+ *        tiles you want from virtually any tile server)
+ * @returns {OpenLayers.Tile}
+ */
+function createSatLayer() {
+    var satTileServer = "http://" + location.host
+        + "/tiles/sat/{z}/{x}/{y}.jpg";
+    return new ol.layer.Tile({
+        source : new ol.source.XYZ({
+            urls : [ satTileServer, satTileServer, satTileServer ]
+        })
+    });
+}
+
+
+/**
+ * The features are not added to a regular vector layer/source,
+ * but to a feature overlay which holds a collection of features.
+ * This collection is passed to the modify and also the draw
+ * interaction, so that both can add or modify features.
+ * @returns {ol.FeatureOverlay}
+ */
+function createOverlay() {
+    return new ol.FeatureOverlay({
+        style : new ol.style.Style({
+            fill : new ol.style.Fill({
+                color : 'rgba(255, 255, 255, 0.15)'
+            }),
+            stroke : new ol.style.Stroke({
+                color : '#ffcc33',
+                width : 2
+            }),
+            image : new ol.style.Circle({
+                radius : 5,
+                fill : new ol.style.Fill({
+                    color : '#ffcc33'
+                })
+            })
+        })
+    });
+}
+
 function getDroneFeature() {
 	return map.getLayers().getArray()[1].getSource().getFeatures()[0];
 }
@@ -30,6 +154,7 @@ function projectLatLong(lat, long) {
 			'EPSG:3857'));
 }
 
+/** Application Functions and helpers**/
 function updateDroneLocation() {
 	if (!autoUpdate) {
 		return;
@@ -60,104 +185,6 @@ function toggleAutoUpdateFlightData() {
 	$(this).toggleClass("active", autoUpdate);
 }
 
-function init() {
-	$("#autoUpdateFlightData").click(toggleAutoUpdateFlightData);
-	$("#drawOff").click(onDrawOff);
-	$("#drawPolygon").click(onDrawPolygon);
-	$("#drawLineString").click(onDrawLineString);
-	$("#settings").click(fillSettingsModal);
-	$("#followToggle").click(onFollowToggle);
-	$("#saveSettings").click(onSaveSettings);
-	$("#sendDroneIp").click(sendDroneIp);
-	$(window).resize(fixMapSize);
-	map = createMap();
-	drawOverlay = createOverlay();
-	drawOverlay.setMap(map);
-	map.addInteraction(createModifyInteaction(drawOverlay));
-	setInterval(updateDroneLocation, 300);
-	fixMapSize();
-}
-
-function createDroneLayer() {
-	var iconFeature = new ol.Feature({
-		geometry : projectLatLong(35.01574, 32.77849)
-	});
-
-	iconFeature.setStyle(new ol.style.Style({
-		image : new ol.style.Icon(/** @type {olx.style.IconOptions} */
-				({
-					anchor : [ 0.9, 80 ],
-					anchorXUnits : 'fraction',
-					anchorYUnits : 'pixels',
-					opacity : 0.75,
-					src : 'images/drone.png'
-				}))
-			}));
-	return new ol.layer.Vector({
-		source : new ol.source.Vector({
-			features : [ iconFeature ]
-		})
-	});
-}
-
-function createSatLayer() {
-	var satTileServer = "http://" + location.host
-			+ "/tiles/sat/{z}/{x}/{y}.jpg";
-	return new ol.layer.Tile({
-		source : new ol.source.XYZ({
-			urls : [ satTileServer, satTileServer, satTileServer ]
-		})
-	});
-}
-
-function craeteMousePositionControl() {
-	return new ol.control.MousePosition({
-		coordinateFormat : ol.coordinate.createStringXY(5),
-		// projection : 'EPSG:3857',
-		projection : 'EPSG:4326',
-		undefinedHTML : '&nbsp;',
-		// Define this so position is not set by default css
-		className : 'custom-mouse-position',
-		// Choose specific element to attach to
-		target : document.getElementById('mouse_location'),
-	});
-}
-
-function createMap() {
-	return new ol.Map({
-		layers : [ createSatLayer(), createDroneLayer() ],
-		target : 'map',
-		controls : new ol.Collection([ craeteMousePositionControl() ]),
-		view : new ol.View({
-			center : [ 3898184, 3865621 ],
-			zoom : 15
-		})
-	});
-}
-
-// The features are not added to a regular vector layer/source,
-// but to a feature overlay which holds a collection of features.
-// This collection is passed to the modify and also the draw
-// interaction, so that both can add or modify features.
-function createOverlay() {
-	return new ol.FeatureOverlay({
-		style : new ol.style.Style({
-			fill : new ol.style.Fill({
-				color : 'rgba(255, 255, 255, 0.15)'
-			}),
-			stroke : new ol.style.Stroke({
-				color : '#ffcc33',
-				width : 2
-			}),
-			image : new ol.style.Circle({
-				radius : 5,
-				fill : new ol.style.Fill({
-					color : '#ffcc33'
-				})
-			})
-		})
-	});
-}
 
 function createModifyInteaction(overlay) {
 	return new ol.interaction.Modify({
@@ -209,20 +236,27 @@ function addDrawCoordinates(event) {
 }
 
 function finishDrawing() {
-    alert ("Finished drawing track. Sending to drone");
-    //ask the user if he wants to send this drawing as a path or it's just junk
+    $("#drawSendModal").modal('toggle');
+}
+
+function sendTrackData() {
     var points = [];
     for (var i = 0; i < currentDrawLat.length; i++) {
         var point = {"lat":currentDrawLat[i], "lon":currentDrawLon[i]};
         points.push(point);
     }
-
     $.post('../track', {"drawType": currentDrawType, "drawCoordinates":JSON.stringify(points)});
-    
-    //post request that track to the server
+    clearTrackData();
+    $("#drawSendModal").modal('toggle');
+}
+
+/**
+ * clear the globals used to keep current drawing coordinates
+ * after we finish
+ */
+function clearTrackData() {
     currentDrawLat = [];
     currentDrawLon = [];
-
 }
 
 function onDrawOff(event) {
@@ -298,12 +332,23 @@ function fixMapSize() {
 	}, 300);
 }
 
+function enableNavbarItems() {
+    $("#autoUpdateFlightData").toggleClass("disabled");
+    $("li.dropdown").toggleClass("disabled");
+    $("#drawOff").toggleClass("disabled");
+    $("#drawLineString").toggleClass("disabled");
+    $("#drawPolygon").toggleClass("disabled");
+    $("#drawOff").click(onDrawOff);
+    $("#drawPolygon").click(onDrawPolygon);
+    $("#drawLineString").click(onDrawLineString);
+}
+
 function sendDroneIp() {
-	$.get("../changeDrone?ip=" + $("#droneIp").val(), function(data) {
+    $.get("../changeDrone?ip=" + $("#droneIp").val(), function(data) {
 		if(data == "ok") {
 			$("#flight_data").css("display","block");
 			$("#registerDrone").css("display", "none");
-            registeredDrone = true;
+            enableNavbarItems();
 		}
 	});
 }
