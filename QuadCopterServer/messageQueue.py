@@ -102,7 +102,9 @@ class MessageQueue(Thread):
 if __name__ == '__main__':
     # q = MessageQueue(target='http://postcatcher.in/catchers/54abdf8c31b05e0200000924')
     q = MessageQueue(target='http://127.0.0.1:8080/receiveMessage')
-    q.enqueue({'kind': 'heartBeat', 'timeStamp': '2015-12-22 20:30:37', 'b': '2'})
+    q.enqueue({'kind': 'heartBeat', 'timeStamp': '2015-12-22 20:30:37', 'stats': {'lat': 35.01574, 'long': 32.77849,
+                                                                                  'height': 90, 'orientation': 0,
+                                                                                  'battery': 95}})
     q.enqueue({'kind': 'heartBeat', 'timeStamp': '2015-12-22 20:30:30', 'b': '1'})
     q.enqueue({'kind': 'targetFound', 'timeStamp': '2015-12-22 20:30:27', 'b': '4'})
     q.enqueue({'kind': 'heartBeat', 'timeStamp': '2015-12-22 20:30:40', 'b': '3'})
