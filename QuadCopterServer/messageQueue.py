@@ -9,7 +9,7 @@ import urllib2
 priority_dictionary = {
     'hello':        10,
     'heartBeat':    3,
-    'targetFound':  2,
+    'flightPlan':  2,
     'Image':        1,
     'bye':          -2
 }

@@ -5,8 +5,11 @@ from flask import Flask, url_for, request, redirect
 from messageQueue import MessageQueue, Message
 from datetime import datetime
 from threading import Thread
-from logging import Logger
 import json
+import logging
+
+logging.basicConfig(filename='groundControl.log', level=logging.INFO, filemode='w',
+                    format='%(asctime)s %(levelname)s: %(message)s')
 
 app = Flask(__name__)
 droneData = dict(lastUpdate=datetime.utcnow(), stats={'lat': 35.01574,
@@ -19,7 +22,7 @@ droneIp = None
 
 
 def is_new_valid_ip(ip):
-    #add more ip validation
+    # add more ip validation
     return ip and ip != droneIp
 
 
@@ -54,25 +57,26 @@ def handle_bye(ip, message=None):
 
 def handle_heartbeat(ip, message):
     if ip != droneIp:
-        print 'not mu drone'
+        logging.warning('Got heartbeat from unknown drone: %s, current drone is: %s', ip, droneIp)
     elif message.timeStamp < droneData['lastUpdate']:
-        print 'old'
+        logging.info('Got old heartbeat, Not updating')
     else:
         droneData['lastUpdate'] = message.timeStamp
         droneData['stats'] = message.content['stats']
-        print 'Drone data updated'
+        logging.info('Drone data updated')
 
 
 def log_message(message, ip):
     sent = message.timeStamp.strftime('%Y-%m-%d %H:%M:%S')
     now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-    print 'Got: "' + message.kind + '" from: ' + ip
-    print 'Message Sent: ' + sent + ', received: ' + now
+    logging.info('Got "%s" from %s', message.kind, ip)
+    logging.info('Sent: %s, received: %s', sent, now)
+    logging.debug('Content: %s', message.content)
 
 
 messagesHandlers = {
     'hello': handle_hello,
-    'bye':      handle_bye,
+    'bye': handle_bye,
     'heartBeat': handle_heartbeat
 }
 
@@ -85,6 +89,7 @@ def get_site():
 @app.route('/tiles/<tile_type>/<z>/<x>/<y>.jpg')
 def get_tile(tile_type, x, y, z):
     import tileServer
+
     return tileServer.get_tile(tile_type, x, y, z)
 
 
@@ -101,6 +106,7 @@ def receive_message():
     if message.kind in messagesHandlers:
         messagesHandlers[message.kind](ip=request.remote_addr, message=message)
         return "ok"
+    logging.warning('Missing handler for message type: %s', message.kind)
     return "No handler found for message kind: " + message.kind
 
 
@@ -111,13 +117,13 @@ def flight_data():
 
 @app.route('/track', methods=['POST'])
 def track():
-    print request.form["drawType"]
-    print request.form["drawCoordinates"]
-
-    # req = json.loads(request.data)
-    print "Got track request"
-    # print "type: " + req['drawType']
-    # print "points: " + req['drawCoordinates']
+    if not messagesQueue:
+        logging.error('Cannot send flight plan, no drone connected')
+        return "Internal error"
+    messagesQueue.enqueue(
+        {'kind': 'flightPlan', 'timeStamp': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+         'planType': request.form["drawType"], 'planData': json.loads(request.form["drawCoordinates"])})
+    logging.info('Sent flight plan to drone: %s', droneIp)
     return "ok"
 
 
@@ -151,12 +157,12 @@ def send_message(message_json):
 
 
 if __name__ == '__main__':
-    app.run(port=8080, host='0.0.0.0',debug=True, threaded=True)
+    app.run(port=8080, host='0.0.0.0', debug=True, threaded=True)
 
 
-# @app.route('/droneData', methods=['POST'])
-# def drone_request():
-#     obj = request.get_json()
-#     drone.update(obj)
-#     #push object to "from_drone" queue
-#     #return next mission (actual mission or NOP)
+    # @app.route('/droneData', methods=['POST'])
+    # def drone_request():
+    # obj = request.get_json()
+    #     drone.update(obj)
+    #     #push object to "from_drone" queue
+    #     #return next mission (actual mission or NOP)
