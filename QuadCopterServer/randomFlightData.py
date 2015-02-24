@@ -21,3 +21,15 @@ def get_data():
         data[key] = random.uniform(data[key]-delta[key], data[key]+delta[key])
     data['battery'] -= delta['battery']
     return data
+
+
+if __name__ == '__main__':
+    from time import sleep
+    from datetime import datetime
+    from messageQueue import MessageQueue
+    q = MessageQueue(target='http://127.0.0.1:8080/receiveMessage')
+    q.start()
+    while True:
+        sleep(0.5)
+        q.enqueue({'kind': 'heartBeat', 'timeStamp': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), 'stats': get_data()})
+
