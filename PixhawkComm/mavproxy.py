@@ -13,6 +13,13 @@ import serial, Queue, select
 import traceback
 import select
 import json
+from datetime import datetime
+import pygame
+
+#for x in sys.path:
+#    print x
+sys.path.append("/home/buh/py/GIPdrone/QuadCopterServer")     ## dependes on the machine running this code
+import groundControl
 
 # allow running without installing
 #sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
@@ -475,17 +482,10 @@ def process_master(m):
         for msg in msgs:
             if getattr(m, '_timestamp', None) is None:
                 m.post_message(msg)
-        #if msg.get_type() == "RAW_IMU":     # added print to file in json format
-        #    json_msg = json.dumps(str(msg))
-        #    json_log.write(json_msg+"\n")
-        if msg.get_type() == "BAD_DATA":
-            if opts.show_errors:
-                mpstate.console.writeln("MAV error: %s" % msg)
+            if msg.get_type() == "BAD_DATA":
+                if opts.show_errors:
+                    mpstate.console.writeln("MAV error: %s" % msg)
                 mpstate.status.mav_error += 1
-        else:
-            json_msg = json.dumps(str(msg))
-            json_log.write(json_msg+"\n")
-            #print json_msg
 
 def process_mavlink(slave):
     '''process packets from MAVLink slaves, forwarding to the master'''
@@ -716,8 +716,134 @@ def main_loop():
                     # on an exception, remove it from the select list
                     mpstate.select_extra.pop(fd)
 
+####### ADDED FROM HERE ########
 
+#change the rc channel (ch_num) to a new value (value : 1000-2000)
+def rc_control(ch_num,value):
+    rc_cmd = 'rc '+ str(ch_num) + ' ' + str(value)
+    process_stdin(rc_cmd)
+    time.sleep(1)
 
+#genarate new waypoint file from recived gps cords for auto flight
+def genCordsFile(cords, filename, altitude=100.0):
+    with open(filename, 'w') as f:
+        header = "QGC WPL 110\n"
+        f.write(header)
+        for idx, coord in enumerate(cords):
+            data = "\t".join([str(idx), "0", "0", "16", "0.000000", "0.000000", "0.000000", "0.000000",
+                              "{0:.6f}".format(coord[0]), "{0:.6f}".format(coord[1]), "{0:.6f}".format(altitude), "1"])
+            data += "\n"
+            f.write(data)
+
+#recives gps cords,makes waypoints file and loads it to autopilot 
+def start_mission():
+     cords = {(-35.362938, 149.165085),
+                (-35.361164, 149.163986),
+                (-35.359467, 149.161697),
+                (-35.366333, 149.162659),
+                (-35.366131, 149.164581),
+                (-35.359272, 149.163757),
+                (-35.359272, 149.163757)}
+     genCordsFile(cords, filename='mission.txt')
+     process_stdin('wp load mission.txt')
+
+#control over quad using keybord
+def quad_control():
+    pygame.init()
+    window = pygame.display.set_mode((300,300))
+    black=(0,0,0)
+    rc_channels = {
+          pygame.K_LEFT: 1,
+          pygame.K_RIGHT: 1,
+          pygame.K_UP: 2,
+          pygame.K_DOWN: 2,
+          pygame.K_w: 3,
+          pygame.K_s: 3,
+    }
+
+    rc_value = {
+          pygame.K_LEFT: 1400,
+          pygame.K_RIGHT: 1600,
+          pygame.K_UP: 1600,
+          pygame.K_DOWN: 1400,
+          pygame.K_w: 1100,
+          pygame.K_s: 1000,
+    }
+
+    w_loaded = 0
+
+    while True :
+        for event in pygame.event.get():
+            if (event.type == pygame.KEYDOWN ):
+                if(event.key in rc_channels and event.key in rc_value):
+                    rc_control(rc_channels[event.key],rc_value[event.key])
+                if(event.key == pygame.K_SPACE):
+                    process_stdin('disarm')
+                if(event.key == pygame.K_a):
+                    process_stdin('rc 3 1000')
+                    time.sleep(1)
+                    process_stdin('arm throttle')
+                if(event.key == pygame.K_0):
+                    process_stdin('rc 1 1500')
+                    process_stdin('rc 2 1500')
+                    process_stdin('rc 3 1000')
+                    process_stdin('rc 4 1500')
+                if(event.key == pygame.K_m):
+                    start_mission()
+                    w_loaded = 1
+                if(event.key == pygame.K_g and w_loaded == 1):
+                    process_stdin('rc 3 1600')
+                    time.sleep(2)
+                    process_stdin('mode auto')
+                if(event.key == pygame.K_c):
+                    process_stdin('ground')
+                if(event.key == pygame.K_r):
+                    process_stdin('mode rtl')
+                if(event.key == pygame.K_ESCAPE):
+                    pygame.quit()
+
+#function for GCS communication
+#def out_comm_loop():
+#    #mav_status msg dict
+#   status_dict = {
+#        'lat':         'NULL',
+#        'long':        'NULL',
+#        'height':      'NULL',
+#        'orientation': 'NULL',
+#        'battery':     'NULL'
+#    }
+#    groundControl.start_server()
+#    # while groundControl.messageQueue is None:
+#    #     time.sleep(0.1)
+#    # comm_thread = threading.Thread(target=in_comm_loop)
+#    # comm_thread.daemon = True
+#    # comm_thread.start()
+#    ctrl_thread = threading.Thread(target=quad_control)
+#    ctrl_thread.daemon = True
+#    ctrl_thread.start()
+#    flag = 1
+#    print "### connection opened ###"
+#    time.sleep(1)
+#    while True:
+#        if mpstate is None or mpstate.status.exit:
+#            return
+#        while not('GLOBAL_POSITION_INT' in mpstate.status.msgs and 'VFR_HUD' in mpstate.status.msgs\
+#                and 'SYS_STATUS' in mpstate.status.msgs):
+#            time.sleep(0.1)
+#        status_dict['lat'] = mpstate.status.msgs['GLOBAL_POSITION_INT'].lat
+#        status_dict['long'] = mpstate.status.msgs['GLOBAL_POSITION_INT'].lon
+#        status_dict['height'] = mpstate.status.msgs['VFR_HUD'].alt
+#        status_dict['orientation'] = mpstate.status.msgs['VFR_HUD'].heading
+#        status_dict['battery'] = mpstate.status.msgs['SYS_STATUS'].battery_remaining
+#        time_now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+#        groundControl.send_message({'kind': 'heartBeat', 'timeStamp': time_now, 'b': json.dumps(status_dict)})
+#        time.sleep(1)
+
+#def in_comm_loop():
+#    while True:
+#        groundControl.receive_message()
+
+####### ADDED TO HERE ########
 def input_loop():
     '''wait for user input'''
     while mpstate.status.exit != True:
@@ -750,8 +876,6 @@ def run_script(scriptfile):
 
 if __name__ == '__main__':
     from optparse import OptionParser
-    json_log = open('json_log.txt' , 'w')   # open json_log file
-    print "### log file opened ###"
     parser = OptionParser("mavproxy.py [options]")
 
     parser.add_option("--master", dest="master", action='append',
@@ -919,6 +1043,15 @@ Auto-detected serial ports are:
     mpstate.status.thread.daemon = True
     mpstate.status.thread.start()
 
+    ##### ADDED FROM HERE #####
+
+    # use a separate thread for controlling the quad via keyboard 
+    ctrl_thread = threading.Thread(target=quad_control)
+    ctrl_thread.daemon = True
+    ctrl_thread.start()
+
+    ##### ADDED TO HERE #####
+
     # use main program for input. This ensures the terminal cleans
     # up on exit
     while (mpstate.status.exit != True):
@@ -940,7 +1073,6 @@ Auto-detected serial ports are:
                         m.init(mpstate)   
 
             else:
-                json_log.close()   # close json_log file
                 mpstate.status.exit = True
                 sys.exit(1)
 
@@ -950,3 +1082,4 @@ Auto-detected serial ports are:
             print("Unloading module %s" % m.name)
             m.unload()
     sys.exit(1)
+
