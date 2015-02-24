@@ -228,7 +228,7 @@ function toggleAutoUpdateFlightData() {
 	$(this).toggleClass("active", autoUpdate);
 }
 
-
+//ToDo: figure out if we need to remove this function or not
 function createSelectInteraction(overlay) {
 	return new ol.interaction.Select({
 		features : overlay.getFeatures(),
@@ -289,7 +289,7 @@ function sendTrackData() {
 }
 
 /**
- * clear the globals used to keep current drawing coordinates
+ * Clear the globals used to keep current drawing coordinates
  * after we finish
  */
 function clearTrackData() {
@@ -297,6 +297,11 @@ function clearTrackData() {
     currentDrawLon = [];
 }
 
+/**
+ * Event handler for click on the "off" link in the
+ * map drawing drop-down menu
+ * @param event
+ */
 function onDrawOff(event) {
 	if (drawInteraction == null) {
 		return;
@@ -309,10 +314,20 @@ function onDrawOff(event) {
 	return;
 }
 
+/**
+ * Event handler for click on the "clear drawing" link in the
+ * map drawing drop-down menu
+ * @param event
+ */
 function onClearDrawings(event) {
 	drawOverlay.getFeatures().clear();
 }
 
+/**
+ * Event handler for click on the "Polygon" link in the
+ * map drawing drop-down menu
+ * @param event
+ */
 function onDrawPolygon(event) {
 	onDrawOff(event);
     currentDrawType = "Polygon";
@@ -322,6 +337,11 @@ function onDrawPolygon(event) {
     $(map).dblclick(finishDrawing);
 }
 
+/**
+ * Event handler for click on the "LineString" link in the
+ * map drawing drop-down menu
+ * @param event
+ */
 function onDrawLineString(event) {
 	onDrawOff(event);
     currentDrawType = "LineString";
@@ -331,6 +351,10 @@ function onDrawLineString(event) {
     $(map).dblclick(finishDrawing);
 }
 
+/**
+ * Set the application to follow and re-center the map
+ * on the drone
+ */
 function setFollowToggle() {
     if (followDrone) {
         $("#followToggle").attr("aria-pressed", "true");
@@ -344,6 +368,10 @@ function setFollowToggle() {
     }
 }
 
+/**
+ * Fill the settings modal dialog with relevant information
+ * @param event
+ */
 function fillSettingsModal(event) {
     $("#criticalBattery").val(criticalBatteryLevel);
     var center = ol.proj.transform(map.getView().getCenter(), 'EPSG:3857', 'EPSG:4326');
@@ -352,11 +380,19 @@ function fillSettingsModal(event) {
     setFollowToggle();
 }
 
+/**
+ * Toggle the the follow flag to follow and re-center the map on the drone
+ * @param event
+ */
 function onFollowToggle(event) {
     followDrone = !followDrone;
     setFollowToggle();
 }
 
+/**
+ * Event handler for "save" click on the settings modal dialog
+ * @param event
+ */
 function onSaveSettings(event) {
     var formLat = parseFloat($("#mapCenterLat").val());
     var formLon = parseFloat($("#mapCenterLon").val());
@@ -365,6 +401,9 @@ function onSaveSettings(event) {
     $("#closeSettings").click();
 }
 
+/**
+ * Fix the map size on window resize
+ */
 function fixMapSize() {
 	//required so that size fix occurs after resize event is finished
 	setTimeout(function() {
@@ -374,6 +413,9 @@ function fixMapSize() {
 	}, 300);
 }
 
+/**
+ * Enable NavBar items upon sending a drone IP
+ */
 function enableNavbarItems() {
     $("#autoUpdateFlightData").removeClass("disabled");
     $("li.dropdown").removeClass("disabled");
@@ -388,6 +430,9 @@ function enableNavbarItems() {
     $("#drawLineString").click(onDrawLineString);
 }
 
+/**
+ * Send drone IP to server
+ */
 function sendDroneIp() {
     $.get("../changeDrone?ip=" + $("#droneIp").val(), function(data) {
 		if(data == "ok") {
