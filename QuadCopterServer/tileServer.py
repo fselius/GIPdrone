@@ -67,4 +67,4 @@ def get_tile(tile_type, x, y, z):
     try:
         return flask.send_file(get_tile_path(tile_type, x, y, z), mimetype='image/jpg')
     except Exception, e:
-        return "File not Found" + e
+        return "File not Found" + str(e)
