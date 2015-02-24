@@ -24,7 +24,6 @@ $(document).ready(init);
  * INITIALIZE (performed on application page load)
  */
 function init() {
-    $("#autoUpdateFlightData").click(toggleAutoUpdateFlightData);
     $("#settings").click(fillSettingsModal);
     $("#followToggle").click(onFollowToggle);
     $("#saveSettings").click(onSaveSettings);
@@ -271,6 +270,10 @@ function onDrawOff(event) {
 	return;
 }
 
+function onClearDrawings(event) {
+	drawOverlay.getFeatures().clear();
+}
+
 function onDrawPolygon(event) {
 	onDrawOff(event);
     currentDrawType = "Polygon";
@@ -333,12 +336,15 @@ function fixMapSize() {
 }
 
 function enableNavbarItems() {
-    $("#autoUpdateFlightData").toggleClass("disabled");
-    $("li.dropdown").toggleClass("disabled");
-    $("#drawOff").toggleClass("disabled");
-    $("#drawLineString").toggleClass("disabled");
-    $("#drawPolygon").toggleClass("disabled");
+    $("#autoUpdateFlightData").removeClass("disabled");
+    $("li.dropdown").removeClass("disabled");
+    $("#drawOff").removeClass("disabled");
+    $("#drawLineString").removeClass("disabled");
+    $("#drawPolygon").removeClass("disabled");
+    $("#clearDrawings").removeClass("disabled");
+    $("#autoUpdateFlightData").click(toggleAutoUpdateFlightData);
     $("#drawOff").click(onDrawOff);
+    $("#clearDrawings").click(onClearDrawings);
     $("#drawPolygon").click(onDrawPolygon);
     $("#drawLineString").click(onDrawLineString);
 }
