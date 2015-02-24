@@ -144,16 +144,57 @@ function createOverlay() {
     });
 }
 
+
+/**
+ * Getter for the drone icon feature
+ * @returns {*}
+ */
 function getDroneFeature() {
 	return map.getLayers().getArray()[1].getSource().getFeatures()[0];
 }
 
+/**
+ * convert the given latitude and longitude  from EPSG:4326 format
+ * to EPSG:3857 format
+ * @param lat
+ * @param long
+ * @returns {Zj.Point}
+ */
 function projectLatLong(lat, long) {
 	return new ol.geom.Point(ol.proj.transform([ lat, long ], 'EPSG:4326',
 			'EPSG:3857'));
 }
 
-/** Application Functions and helpers**/
+
+function createModifyInteaction(overlay) {
+    return new ol.interaction.Modify({
+        features : overlay.getFeatures(),
+        // the SHIFT key must be pressed to delete vertices, so
+        // that new vertices can be drawn at the same position
+        // of existing vertices
+        deleteCondition : function(event) {
+            return ol.events.condition.shiftKeyOnly(event)
+                && ol.events.condition.singleClick(event);
+        }
+    });
+}
+
+function createDrawInteraction(overlay, drawType) {
+    return new ol.interaction.Draw({
+        features : overlay.getFeatures(),
+        /** @type {ol.geom.GeometryType} */
+        type : drawType
+    });
+}
+
+
+/** END OF MAP CREATION **/
+
+/** Application Functions and helpers **/
+
+/**
+ * Updates the drone feature location on the map
+ */
 function updateDroneLocation() {
 	if (!autoUpdate) {
 		return;
@@ -179,25 +220,15 @@ function updateDroneLocation() {
 	}
 }
 
+/**
+ * Toggle the auto-update button to look "pressed" (or not)
+ */
 function toggleAutoUpdateFlightData() {
 	autoUpdate = !autoUpdate;
 	$(this).toggleClass("active", autoUpdate);
 }
 
-
-function createModifyInteaction(overlay) {
-	return new ol.interaction.Modify({
-		features : overlay.getFeatures(),
-		// the SHIFT key must be pressed to delete vertices, so
-		// that new vertices can be drawn at the same position
-		// of existing vertices
-		deleteCondition : function(event) {
-			return ol.events.condition.shiftKeyOnly(event)
-					&& ol.events.condition.singleClick(event);
-		}
-	});
-}
-
+//ToDo: figure out if we need to remove this function or not
 function createSelectInteraction(overlay) {
 	return new ol.interaction.Select({
 		features : overlay.getFeatures(),
@@ -208,20 +239,20 @@ function createSelectInteraction(overlay) {
 	});
 }
 
-//Double click validator
+/**
+ *  Double click validator
+ */
 function coordinatesExist(lat, lon) {
     var sameLat = currentDrawLat[currentDrawLat.length - 1] == lat;
     var sameLon = currentDrawLon[currentDrawLon.length - 1] == lon;
     return sameLat && sameLon;
 }
-function createDrawInteraction(overlay, drawType) {
-	return new ol.interaction.Draw({
-		features : overlay.getFeatures(),
-		/** @type {ol.geom.GeometryType} */
-		type : drawType
-	});
-}
 
+/**
+ * Event handler for map drawing clicks
+ * adds the coordinates of the click to the global coordinates arrays
+ * @param event - click event
+ */
 function addDrawCoordinates(event) {
     var mousePositionString = $("#mouse_location").find("div.custom-mouse-position").text();
     var positionSplit = mousePositionString.split(", ");
@@ -234,10 +265,18 @@ function addDrawCoordinates(event) {
     currentDrawLon.push(lon);
 }
 
+/**
+ * Event handler for finishing a drawing (with a double-click)
+ * This handler pops-up a modal dialog that asks the user if he
+ * wants to send the drawing to the drone or just leave it on the map.
+ */
 function finishDrawing() {
     $("#drawSendModal").modal('toggle');
 }
 
+/**
+ * Send the drawing coordinates to the server via HTTP POST request.
+ */
 function sendTrackData() {
     var points = [];
     for (var i = 0; i < currentDrawLat.length; i++) {
@@ -250,7 +289,7 @@ function sendTrackData() {
 }
 
 /**
- * clear the globals used to keep current drawing coordinates
+ * Clear the globals used to keep current drawing coordinates
  * after we finish
  */
 function clearTrackData() {
@@ -258,6 +297,11 @@ function clearTrackData() {
     currentDrawLon = [];
 }
 
+/**
+ * Event handler for click on the "off" link in the
+ * map drawing drop-down menu
+ * @param event
+ */
 function onDrawOff(event) {
 	if (drawInteraction == null) {
 		return;
@@ -270,10 +314,20 @@ function onDrawOff(event) {
 	return;
 }
 
+/**
+ * Event handler for click on the "clear drawing" link in the
+ * map drawing drop-down menu
+ * @param event
+ */
 function onClearDrawings(event) {
 	drawOverlay.getFeatures().clear();
 }
 
+/**
+ * Event handler for click on the "Polygon" link in the
+ * map drawing drop-down menu
+ * @param event
+ */
 function onDrawPolygon(event) {
 	onDrawOff(event);
     currentDrawType = "Polygon";
@@ -283,6 +337,11 @@ function onDrawPolygon(event) {
     $(map).dblclick(finishDrawing);
 }
 
+/**
+ * Event handler for click on the "LineString" link in the
+ * map drawing drop-down menu
+ * @param event
+ */
 function onDrawLineString(event) {
 	onDrawOff(event);
     currentDrawType = "LineString";
@@ -292,6 +351,10 @@ function onDrawLineString(event) {
     $(map).dblclick(finishDrawing);
 }
 
+/**
+ * Set the application to follow and re-center the map
+ * on the drone
+ */
 function setFollowToggle() {
     if (followDrone) {
         $("#followToggle").attr("aria-pressed", "true");
@@ -305,6 +368,10 @@ function setFollowToggle() {
     }
 }
 
+/**
+ * Fill the settings modal dialog with relevant information
+ * @param event
+ */
 function fillSettingsModal(event) {
     $("#criticalBattery").val(criticalBatteryLevel);
     var center = ol.proj.transform(map.getView().getCenter(), 'EPSG:3857', 'EPSG:4326');
@@ -313,11 +380,19 @@ function fillSettingsModal(event) {
     setFollowToggle();
 }
 
+/**
+ * Toggle the the follow flag to follow and re-center the map on the drone
+ * @param event
+ */
 function onFollowToggle(event) {
     followDrone = !followDrone;
     setFollowToggle();
 }
 
+/**
+ * Event handler for "save" click on the settings modal dialog
+ * @param event
+ */
 function onSaveSettings(event) {
     var formLat = parseFloat($("#mapCenterLat").val());
     var formLon = parseFloat($("#mapCenterLon").val());
@@ -326,6 +401,9 @@ function onSaveSettings(event) {
     $("#closeSettings").click();
 }
 
+/**
+ * Fix the map size on window resize
+ */
 function fixMapSize() {
 	//required so that size fix occurs after resize event is finished
 	setTimeout(function() {
@@ -335,6 +413,9 @@ function fixMapSize() {
 	}, 300);
 }
 
+/**
+ * Enable NavBar items upon sending a drone IP
+ */
 function enableNavbarItems() {
     $("#autoUpdateFlightData").removeClass("disabled");
     $("li.dropdown").removeClass("disabled");
@@ -349,6 +430,9 @@ function enableNavbarItems() {
     $("#drawLineString").click(onDrawLineString);
 }
 
+/**
+ * Send drone IP to server
+ */
 function sendDroneIp() {
     $.get("../changeDrone?ip=" + $("#droneIp").val(), function(data) {
 		if(data == "ok") {
