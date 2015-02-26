@@ -127,6 +127,13 @@ def change_drone():
 
 @app.route('/receiveMessage', methods=['POST'])
 def receive_message():
+    """
+    Handles a received message from another machine running a message queue.
+    message is expected as json in request body. see messageQueue for message format.
+    message is logged and then a matching handler is dispatched with sender's ip.
+    if no matching handler is defined it is logged and an appropriate message is returned.
+    :return: Status message
+    """
     message = Message(json.loads(request.data))
     log_message(message, request.remote_addr)
     if message.kind in messagesHandlers:
@@ -138,11 +145,21 @@ def receive_message():
 
 @app.route('/flightData', methods=['GET'])
 def flight_data():
+    """
+    return the latest known stats for the drone connected to this server.
+    :return:
+    """
     return json.dumps(droneData['stats'])
 
 
 @app.route('/track', methods=['POST'])
 def track():
+    """
+    receive a form containing a flight plan from the user web interface and
+    queue an appropriate message to the connected drone message queue.
+    If no drone is connected an error message is logged and returned
+    :return: Status message
+    """
     if not messagesQueue:
         logging.error('Cannot send flight plan, no drone connected')
         return "Internal error"
