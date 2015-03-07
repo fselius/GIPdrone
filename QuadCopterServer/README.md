@@ -77,6 +77,7 @@ If you will click this button once it’s already pressed, you will turn off the
 	triggered, and a modal dialog will show on your screen asking if you
 	would like to send this as a track to the drone.
 * “Settings” - Clicking this item would show a modal form on your screen with field to set your critical battery percentage (default as 20%), map center coordinates, and a toggle switch to turn drone following on the map on/off (this option will re-center the map on the moving drone every 5 data updates). After you finish doing your changes in that form you should either click “Save” to apply them, or “Cancel” to ignore them.
+
 Modifying your map drawings - after you have finished drawing and turned drawing off, you can drag drawing points around the map and modify your linestring/polygon. You can also delete points by holding the “shift” key and clicking drawn points (up to a minimal 2-point line-string or a 3-point polygon).
 Please note - the current implementation will not resend track data to the drone if it is modified after drawing has ended.
 
