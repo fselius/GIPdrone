@@ -45,17 +45,17 @@ Self-Made map tiles - Have the drone to perform a pre-mission flight in the same
 
 #Setting up the application:
 Please make sure you have the following prerequisites installed/filled prior to trying to run the application:
-Python 2.7 or higher 
-Preferably 2.x and not 3.x
-Can be downloaded from https://www.python.org
-Flask micro-framework 
-Can be downloaded from http://flask.pocoo.org
-Note: Please make sure you have the flask modules either in the same folder as all the other python files you will be running, or in python’s “lib” folder
-Have your ground control station dedicated machine, operator device (can be the same one or another computer/tablet), and drone connect to the same wireless network. Make sure you have your drone’s IP address so you will be able to connect from the Operator UI.
+* Python 2.7 or higher 
+  * Preferably 2.x and not 3.x
+  * Can be downloaded from https://www.python.org
+* Flask micro-framework 
+  * Can be downloaded from http://flask.pocoo.org
+  * Note: Please make sure you have the flask modules either in the same folder as all the other python files you will be running, or in python’s “lib” folder
+* Have your ground control station dedicated machine, operator device (can be the same one or another computer/tablet), and drone connect to the same wireless network. Make sure you have your drone’s IP address so you will be able to connect from the Operator UI.
 
 After the prerequisites above are installed, you should download the content of our git repository from: https://github.com/fselius/GIPdrone/tree/master/QuadCopterServer 
 
-Running the application:
+#Running the application:
 Assuming you followed the setup instructions above, all you will have to do now is run groundControl.py that you have downloaded from the repository and you will have your ground control server up and running.
 Next you would want to access the Operator UI using your web browser by the IP address of the machine running the  server, accessing port 8080. (e.g. if your computer got the local IP of 192.168.1.10, the application would be accessed by the following address: http://192.168.1.10:8080/ )
 Note: If you are running the UI on the same machine as you are running the ground control server -  you can also access the UI by the address of http://127.0.0.1:8080/ 
