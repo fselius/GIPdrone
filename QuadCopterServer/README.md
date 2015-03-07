@@ -64,19 +64,19 @@ The first thing you’ll see is a screen with a map on most of it, with an input
 The drone would appear on the map as a blue dot.
 
 On the top of the UI you will see a simple menu with the following options (covered from left to right):
-“Auto Update Flight Data” - Clicking this will poll the drone for up to date flight data. Each time the data will be updated you will see the change on the left side of your screen on the flight data area.
+* “Auto Update Flight Data” - Clicking this will poll the drone for up to date flight data. Each time the data will be updated you will see the change on the left side of your screen on the flight data area.
 You will also notice that once you’ve clicked this option, it would have a darker background to indicate that it’s “on” or “pressed”.
 If you will click this button once it’s already pressed, you will turn off the auto update and will no longer receive flight data updates.
-“Map Drawing” - this drop-down menu contains of 4 options:
-Off (default option) - map drawing is off.
-LineString - drawing is on and will create a line-string between the points you will click on.
-Polygon - drawing is on and will create a polygon between the points you will click on.
-Clear Drawings - clear all the drawings from the map.
+* “Map Drawing” - this drop-down menu contains of 4 options:
+  * Off (default option) - map drawing is off.
+  * LineString - drawing is on and will create a line-string between the points you will click on.
+  * Polygon - drawing is on and will create a polygon between the points you will click on.
+  * Clear Drawings - clear all the drawings from the map.
 	When drawing is turned on, each click on the map will draw a point 
 	where you clicked. Upon double-click, an “end drawing” event will be 
 	triggered, and a modal dialog will show on your screen asking if you
 	would like to send this as a track to the drone.
-“Settings” - Clicking this item would show a modal form on your screen with field to set your critical battery percentage (default as 20%), map center coordinates, and a toggle switch to turn drone following on the map on/off (this option will re-center the map on the moving drone every 5 data updates). After you finish doing your changes in that form you should either click “Save” to apply them, or “Cancel” to ignore them.
+* “Settings” - Clicking this item would show a modal form on your screen with field to set your critical battery percentage (default as 20%), map center coordinates, and a toggle switch to turn drone following on the map on/off (this option will re-center the map on the moving drone every 5 data updates). After you finish doing your changes in that form you should either click “Save” to apply them, or “Cancel” to ignore them.
 Modifying your map drawings - after you have finished drawing and turned drawing off, you can drag drawing points around the map and modify your linestring/polygon. You can also delete points by holding the “shift” key and clicking drawn points (up to a minimal 2-point line-string or a 3-point polygon).
 Please note - the current implementation will not resend track data to the drone if it is modified after drawing has ended.
 
